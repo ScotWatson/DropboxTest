@@ -88,7 +88,7 @@ function start([ evtWindow ]) {
         const params = new URLSearchParams([
           [ "client_id", "m1po2j6iw2k75n4" ],
           [ "redirect_uri", urlThis.toString() ],
-          [ "response_type", "token" ],
+          [ "response_type", "code" ],
           [ "code_challenge", code_challenge ],
           [ "code_challenge_method", "S256" ],
         ]);
