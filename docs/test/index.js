@@ -67,11 +67,19 @@ function start([ evtWindow ]) {
       strToken = window.prompt("Enter the access token: ");
     }
     (async function () {
-      const objReqBody = { limit: 1000 };
+      const objReqBody = {
+        include_deleted: false,
+        include_has_explicit_shared_members: false,
+        include_media_info: false,
+        include_mounted_folders: true,
+        include_non_downloadable_files: true,
+        path: "/",
+        recursive: false
+      };
       const jsonReqBody = JSON.stringify(objReqBody);
       const blobReqBody = new Blob([ jsonReqBody ], { type: "application/json" });
       const headers = [ [ "Authorization", "Bearer " + strToken ] ];
-      const reqFileList = createRequestPOST("https://api.dropboxapi.com/2/file_requests/list_v2", blobReqBody, headers);
+      const reqFileList = createRequestPOST("https://api.dropboxapi.com/2/files/list_folder", blobReqBody, headers);
       const respFileList = await fetch(reqFileList);
       console.log(respFileList);
       if (respFileList.status === 200) {
