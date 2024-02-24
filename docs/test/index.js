@@ -79,7 +79,7 @@ function start([ evtWindow ]) {
     document.body.appendChild(btnSetToken);
 
     const btnGetPKCEToken = document.createElement("button");
-    btnGetPKCEToken.innerHTML = "Set Token";
+    btnGetPKCEToken.innerHTML = "Get PKCE Token";
     btnGetPKCEToken.addEventListener("click", function (evt) {
       (async function () {
         const code_verifier = base64UrlEncode(strRaw32Random());
@@ -139,11 +139,11 @@ function start([ evtWindow ]) {
       return ret.buffer;
     }
     function base64UrlEncode(strRaw) {
-      return atob(strRaw).replace("+", "-").replace("/", "_");
+      return btoa(strRaw).replace("+", "-").replace("/", "_");
     }
     function base64UrlDecode(strBase64URL) {
       const strBase64 = strBase64URL.replace("-", "+").replace("_", "/");
-      return btoa(strBase64);
+      return atob(strBase64);
     }
     async function list_folder() {
       const objReqBody = {
