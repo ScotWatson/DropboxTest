@@ -113,9 +113,11 @@ function start([ evtWindow ]) {
       const respDownload = await fetch(reqDownload);
       console.log(respDownload);
       if (respDownload.status === 200) {
-        const jsonRespBody = await respDownload.text();
-        const objRespBody = JSON.parse(jsonRespBody);
+        const jsonResult = respDownload.headers.get("dropbox-api-result");
+        const objRespBody = JSON.parse(jsonResult);
         console.log(objRespBody);
+        const strRespBody = await respDownload.text();
+        console.log(strRespBody);
       }
     }
   } catch (e) {
