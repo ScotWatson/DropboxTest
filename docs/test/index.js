@@ -84,7 +84,7 @@ function start([ evtWindow ]) {
       (async function () {
         const code_verifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
         const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(code_verifier));
-        const code_challenge = base64UrlEncode(bytesHash);
+        const code_challenge = base64UrlEncode(bytesHash).slice(0, -1);
         const params = new URLSearchParams([
           [ "client_id", "m1po2j6iw2k75n4" ],
           [ "redirect_uri", urlThis.toString() ],
