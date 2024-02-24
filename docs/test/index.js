@@ -107,7 +107,7 @@ function start([ evtWindow ]) {
       const objReqArg = {
         path: path,
       };
-      const jsonReqArg = JSON.stringify(objReqBody);
+      const jsonReqArg = JSON.stringify(objReqArg);
       const headers = [ [ "Authorization", "Bearer " + strToken ], [ "Dropbox-API-Arg",  jsonReqArg ] ];
       const reqDownload = createRequestPOST("https://content.dropboxapi.com/2/files/download", null, headers);
       const respDownload = await fetch(reqFileList);
