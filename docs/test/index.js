@@ -68,9 +68,39 @@ function start([ evtWindow ]) {
     console.log(fragment);
     console.log(paramsThis);
     let strToken = paramsThis.get("access_token");
-    while (!strToken) {
-      strToken = window.prompt("Enter the access token: ");
-    }
+    
+    const btnSetToken = document.createElement("button");
+    btnSetToken.innerHTML = "Set Token";
+    btnSetToken.addEventListener("click", function (evt) {
+      while (!strToken) {
+        strToken = window.prompt("Enter the access token: ");
+      }
+    });
+    document.body.appendChild(btnSetToken);
+
+    const btnGetPKCEToken = document.createElement("button");
+    btnGetPKCEToken.innerHTML = "Set Token";
+    btnGetPKCEToken.addEventListener("click", function (evt) {
+      (async function () {
+        const code_verifier = base64UrlEncode(strRaw32Random());
+        const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(code_verifier));
+        const code_challenge = base64UrlEncode(bytesHash);
+        const params = new URLSearchParams([
+          [ "client_id", "m1po2j6iw2k75n4" ],
+          [ "redirect_uri", "https://scotwatson.github.io/DropboxTest/test/index.html" ],
+          [ "response_type", token ],
+          [ "code_challenge", code_challenge ],
+          [ "code_challenge_method", "S256" ],
+        ]);
+        const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
+        const req = createRequestGET(urlAuthorize);
+        const resp = await fetch(req);
+        console.log(resp);
+      })();
+    });
+    document.body.appendChild(btnGetPKCEToken);
+
+
     const btnListFolder = document.createElement("button");
     btnListFolder.innerHTML = "List Folder";
     btnListFolder.addEventListener("click", function (evt) {
@@ -92,6 +122,29 @@ function start([ evtWindow ]) {
       revokeToken();
     });
     document.body.appendChild(btnRevokeToken);
+    function strRaw32Random() {
+      const buffer = new Uint8Array(32);
+      self.crypto.getRandomValues(buffer);
+      let ret = "";
+      for (const byte of buffer) {
+        ret += String.fromCharCode(byte);
+      }
+      return ret;
+    }
+    function bytesFromRaw(strRaw) {
+      const ret = new Uint8Array(strRaw.length);
+      for (let i = 0; i < strRaw.length; ++i) {
+        ret[i] = strRaw.charCodeAt(i);
+      }
+      return ret.buffer;
+    }
+    function base64UrlEncode(strRaw) {
+      return atob(strRaw).replace("+", "-").replace("/", "_");
+    }
+    function base64UrlDecode(strBase64URL) {
+      const strBase64 = strBase64URL.replace("-", "+").replace("_", "/");
+      return btoa(strBase64);
+    }
     async function list_folder() {
       const objReqBody = {
         include_deleted: false,
