@@ -83,7 +83,7 @@ function start([ evtWindow ]) {
       const respFileList = await fetch(reqFileList);
       console.log(respFileList);
       if (respFileList.status === 200) {
-        const jsonRespBody = await respFileList.body.text();
+        const jsonRespBody = await respFileList.text();
         const objRespBody = JSON.parse(jsonRespBody);
         console.log(objRespBody);
       }
