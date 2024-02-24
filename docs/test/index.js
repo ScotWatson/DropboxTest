@@ -61,7 +61,11 @@ function createRequestPOST(endpoint, body, headers) {
 function start([ evtWindow ]) {
   try {
     const urlThis = new self.URL(window.location);
-    const paramsThis = new URLSearchParams(urlThis.hash);
+    console.log(window.location);
+    console.log(urlThis);
+    const paramsThis = new self.URLSearchParams(urlThis.hash);
+    console.log(urlThis.hash);
+    console.log(paramsThis);
     let strToken = paramsThis.get("access_token");
     while (!strToken) {
       strToken = window.prompt("Enter the access token: ");
