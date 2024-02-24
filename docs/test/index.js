@@ -82,7 +82,7 @@ function start([ evtWindow ]) {
     btnGetPKCEToken.innerHTML = "Get PKCE Token";
     btnGetPKCEToken.addEventListener("click", function (evt) {
       (async function () {
-        const code_verifier = base64UrlEncode(strRaw32Random());
+        const code_verifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
         const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(code_verifier));
         const code_challenge = base64UrlEncode(bytesHash);
         const params = new URLSearchParams([
@@ -101,7 +101,7 @@ function start([ evtWindow ]) {
     document.body.appendChild(btnGetPKCEToken);
 
     const btnGetImplicitToken = document.createElement("button");
-    btnGetImplicitToken.innerHTML = "Get PKCE Token";
+    btnGetImplicitToken.innerHTML = "Get Implicit Token";
     btnGetImplicitToken.addEventListener("click", function (evt) {
       (async function () {
         const params = new URLSearchParams([
