@@ -88,7 +88,7 @@ function start([ evtWindow ]) {
         const params = new URLSearchParams([
           [ "client_id", "m1po2j6iw2k75n4" ],
           [ "redirect_uri", "https://scotwatson.github.io/DropboxTest/test/index.html" ],
-          [ "response_type", token ],
+          [ "response_type", "token" ],
           [ "code_challenge", code_challenge ],
           [ "code_challenge_method", "S256" ],
         ]);
