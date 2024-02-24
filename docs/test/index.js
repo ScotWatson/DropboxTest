@@ -84,7 +84,7 @@ function start([ evtWindow ]) {
       (async function () {
         const code_verifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
         const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(code_verifier));
-        const code_challenge = base64UrlEncode(bytesHash).slice(0, -1);
+        const code_challenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
         const params = new URLSearchParams([
           [ "client_id", "m1po2j6iw2k75n4" ],
           [ "redirect_uri", urlThis.toString() ],
@@ -139,11 +139,7 @@ function start([ evtWindow ]) {
     function strRaw32Random() {
       const buffer = new Uint8Array(32);
       self.crypto.getRandomValues(buffer);
-      let ret = "";
-      for (const byte of buffer) {
-        ret += String.fromCharCode(byte);
-      }
-      return ret;
+      return rawFromBytes(buffer);
     }
     function bytesFromRaw(strRaw) {
       const ret = new Uint8Array(strRaw.length);
@@ -151,6 +147,14 @@ function start([ evtWindow ]) {
         ret[i] = strRaw.charCodeAt(i);
       }
       return ret.buffer;
+    }
+    function rawFromBytes(bytes) {
+      const buffer = new Uint8Array(bytes);
+      let ret = "";
+      for (const byte of buffer) {
+        ret += String.fromCharCode(byte);
+      }
+      return ret;
     }
     function base64UrlEncode(strRaw) {
       return btoa(strRaw).replace("+", "-").replace("/", "_");
