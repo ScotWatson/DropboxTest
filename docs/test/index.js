@@ -86,7 +86,7 @@ function start([ evtWindow ]) {
     btnRevokeToken.addEventListener("click", function (evt) {
       revokeToken();
     });
-    document.body.appendChild(btnDownload);
+    document.body.appendChild(btnRevokeToken);
     async function list_folder() {
       const objReqBody = {
         include_deleted: false,
