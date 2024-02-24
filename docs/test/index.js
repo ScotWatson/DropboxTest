@@ -113,7 +113,7 @@ function start([ evtWindow ]) {
         window.location = urlAuthorize;
       })();
     });
-    document.body.appendChild(btnGetPKCEToken);
+    document.body.appendChild(btnGetImplicitToken);
 
     const btnListFolder = document.createElement("button");
     btnListFolder.innerHTML = "List Folder";
