@@ -63,8 +63,9 @@ function start([ evtWindow ]) {
     const urlThis = new self.URL(window.location);
     console.log(window.location);
     console.log(urlThis);
-    const paramsThis = new self.URLSearchParams(urlThis.hash.substring(1));
-    console.log(urlThis.hash);
+    const fragment = urlThis.hash.substring(1);
+    const paramsThis = new self.URLSearchParams(fragment);
+    console.log(fragment);
     console.log(paramsThis);
     let strToken = paramsThis.get("access_token");
     while (!strToken) {
