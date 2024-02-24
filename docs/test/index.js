@@ -66,7 +66,22 @@ function start([ evtWindow ]) {
     while (!strToken) {
       strToken = window.prompt("Enter the access token: ");
     }
-    (async function () {
+    const btnListFolder = document.createElement("button");
+    btnListFolder.innerHTML = "List Folder";
+    btnListFolder.addEventListener("click", function (evt) {
+      list_folder();
+    });
+    document.body.appendChild(btnListFolder);
+    const inpPath = document.createElement("input");
+    inpPath.type = "text";
+    document.body.appendChild(inpPath);
+    const btnDownload = document.createElement("button");
+    btnDownload.innerHTML = "Download";
+    btnDownload.addEventListener("click", function (evt) {
+      download(inpPath.value);
+    });
+    document.body.appendChild(btnDownload);
+    async function list_folder() {
       const objReqBody = {
         include_deleted: false,
         include_has_explicit_shared_members: false,
@@ -74,7 +89,7 @@ function start([ evtWindow ]) {
         include_mounted_folders: true,
         include_non_downloadable_files: true,
         path: "",
-        recursive: false
+        recursive: false,
       };
       const jsonReqBody = JSON.stringify(objReqBody);
       const blobReqBody = new Blob([ jsonReqBody ], { type: "application/json" });
@@ -87,7 +102,22 @@ function start([ evtWindow ]) {
         const objRespBody = JSON.parse(jsonRespBody);
         console.log(objRespBody);
       }
-    })();
+    }
+    async function download(path) {
+      const objReqArg = {
+        path: path,
+      };
+      const jsonReqArg = JSON.stringify(objReqBody);
+      const headers = [ [ "Authorization", "Bearer " + strToken ], [ "Dropbox-API-Arg",  jsonReqArg ] ];
+      const reqDownload = createRequestPOST("https://content.dropboxapi.com/2/files/download", null, headers);
+      const respDownload = await fetch(reqFileList);
+      console.log(respDownload);
+      if (respDownload.status === 200) {
+        const jsonRespBody = await respDownload.text();
+        const objRespBody = JSON.parse(jsonRespBody);
+        console.log(objRespBody);
+      }
+    }
   } catch (e) {
     console.error(e);
   }
