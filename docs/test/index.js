@@ -81,6 +81,12 @@ function start([ evtWindow ]) {
       download(inpPath.value);
     });
     document.body.appendChild(btnDownload);
+    const btnRevokeToken = document.createElement("button");
+    btnRevokeToken.innerHTML = "Revoke Token";
+    btnRevokeToken.addEventListener("click", function (evt) {
+      revokeToken();
+    });
+    document.body.appendChild(btnDownload);
     async function list_folder() {
       const objReqBody = {
         include_deleted: false,
@@ -118,6 +124,17 @@ function start([ evtWindow ]) {
         console.log(objRespBody);
         const strRespBody = await respDownload.text();
         console.log(strRespBody);
+      }
+    }
+    async function revokeToken() {
+      const headers = [ [ "Authorization", "Bearer " + strToken ] ];
+      const reqRevokeToken = createRequestPOST("https://content.dropboxapi.com/2/files/download", null, headers);
+      const respRevokeToken = await fetch(reqRevokeToken);
+      console.log(respRevokeToken);
+      if (respRevokeToken.status === 200) {
+        console.log("Token Revoked");
+      } else {
+        console.log("Token Not Revoked");
       }
     }
   } catch (e) {
