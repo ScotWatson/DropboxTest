@@ -58,81 +58,95 @@ function createRequestPOST(endpoint, body, headers) {
   });
 }
 
-const strAppId = "m1po2j6iw2k75n4";
+// This web application is a "client", per the definition in Section 1.1 of RFC 6749.
+// Specifically, it is a "user-agent-based application", and therefore a "public" client, per the definitions in Section 2.1 of RFC 6749.
+// Section 1.1 of RFC 6749 specifies the following four grant types:
+// - authorization code
+// - implicit
+// - resource owner password credentials
+// - client credentials
+
+// Below is the "Client Identifier" referred to in Section 2.2 of RFC 6749. This is also referred to by some as the "App Id".
+// All methods in the library require the client identifier and therefore assume the client is registered. Unregistered clients per Section 2.4 of RFC 6749 are not supported.
+const strClientId = "m1po2j6iw2k75n4";
+// Below is the "Authorization Endpoint" per Section 3 of RFC 6749. Section 3.1 of RFC 6749 provides details.
+const urlAuthorizationEndpoint = new self.URL("https://www.dropbox.com/oauth2/authorize");
+// Below is the "Token Endpoint" per Section 3 of RFC 6749. Section 3.2 of RFC 6749 provides details.
+const urlTokenEndpoint = new self.URL("https://api.dropboxapi.com/oauth2/token");
+// Below is the "Redirect Endpoint" per Section 3 of RFC 6749. Section 3.1.2 of RFC 6749 provides details. It is taken to be the current location.
+const urlRedirectEndpoint = new self.URL(urlThis.origin + urlThis.pathname);
+
 const urlThis = new self.URL(window.location);
 const paramsThis = urlThis.searchParams;
-const urlRedirect = urlThis.origin + urlThis.pathname;
 const strThisFragment = urlThis.hash.substring(1);
+
 let strAccessToken = "";
 let strRefreshToken = "";
-let spanAccessToken = null;
-let spanRefreshToken = null;
+
 function setAccessToken(strToken) {
   strAccessToken = strToken;
-  if (spanAccessToken !== null) {
-    spanAccessToken.innerHTML = "";
-    spanAccessToken.append(strAccessToken);
-  }
+  callbackAccessToken(strAccessToken);
 }
 function setRefreshToken(strToken) {
   strRefreshToken = strToken;
-  if (spanRefreshToken !== null) {
-    spanRefreshToken.innerHTML = "";
-    spanRefreshToken.append(strRefreshToken);
-  }
+  callbackRefreshToken(strToken);
 }
 
-const auth_mode = window.sessionStorage.getItem("auth_mode");
-if (auth_mode) {
-  switch (auth_mode) {
-    case "PKCE Access": {
-      // PKCE flow redirect callback - access token
-      if (paramsThis.has("code")) {
-        alert("PKCE flow redirect callback - access token");
-        const authorization_code = paramsThis.get("code");
-        const code_verifier = window.sessionStorage.getItem("code_verifier");
-        (async function () {
-          setAccessToken(await tokenAccessPKCE(authorization_code, code_verifier));
-        })();
-        window.sessionStorage.removeItem("auth_mode");
-        window.sessionStorage.removeItem("code_verifier");
-        window.history.replaceState(null, "", urlRedirect);
+parseRedirectParameters();
+
+function parseRedirectParameters() {
+  const auth_mode = window.sessionStorage.getItem("auth_mode");
+  if (auth_mode) {
+    switch (auth_mode) {
+      case "PKCE Access": {
+        // PKCE flow redirect callback - access token
+        if (paramsThis.has("code")) {
+          alert("PKCE flow redirect callback - access token");
+          const authorization_code = paramsThis.get("code");
+          const code_verifier = window.sessionStorage.getItem("code_verifier");
+          (async function () {
+            setAccessToken(await tokenAccessPKCE(authorization_code, code_verifier));
+          })();
+          window.sessionStorage.removeItem("auth_mode");
+          window.sessionStorage.removeItem("code_verifier");
+          window.history.replaceState(null, "", urlRedirectEndpoint);
+        }
       }
-    }
-      break;
-    case "PKCE Refresh": {
-      // PKCE flow redirect callback - refresh token
-      if (paramsThis.has("code")) {
-        alert("PKCE flow redirect callback - refresh token");
-        const authorization_code = paramsThis.get("code");
-        const code_verifier = window.sessionStorage.getItem("code_verifier");
-        (async function () {
-          const { strNewAccessToken, strNewRefreshToken } = await tokenRefreshPKCE(authorization_code, code_verifier);
-          setAccessToken(strNewAccessToken);
-          setRefreshToken(strNewRefreshToken);
-        })();
-        window.sessionStorage.removeItem("auth_mode");
-        window.sessionStorage.removeItem("code_verifier");
-        window.history.replaceState(null, "", urlRedirect);
+        break;
+      case "PKCE Refresh": {
+        // PKCE flow redirect callback - refresh token
+        if (paramsThis.has("code")) {
+          alert("PKCE flow redirect callback - refresh token");
+          const authorization_code = paramsThis.get("code");
+          const code_verifier = window.sessionStorage.getItem("code_verifier");
+          (async function () {
+            const { strNewAccessToken, strNewRefreshToken } = await tokenRefreshPKCE(authorization_code, code_verifier);
+            setAccessToken(strNewAccessToken);
+            setRefreshToken(strNewRefreshToken);
+          })();
+          window.sessionStorage.removeItem("auth_mode");
+          window.sessionStorage.removeItem("code_verifier");
+          window.history.replaceState(null, "", urlRedirectEndpoint);
+        }
       }
-    }
-      break;
-    case "Implicit Access": {
-      const paramsThisFragment = new self.URLSearchParams(strThisFragment);
-      if (paramsThisFragment.get("access_token")) {
-        // Implicit flow redirect callback - access token
-        alert("Implicit flow redirect callback - access token");
-        setAccessToken(paramsThisFragment.get("access_token"));
-        window.sessionStorage.removeItem("auth_mode");
-        window.history.replaceState(null, "", urlRedirect);
+        break;
+      case "Implicit Access": {
+        const paramsThisFragment = new self.URLSearchParams(strThisFragment);
+        if (paramsThisFragment.get("access_token")) {
+          // Implicit flow redirect callback - access token
+          alert("Implicit flow redirect callback - access token");
+          setAccessToken(paramsThisFragment.get("access_token"));
+          window.sessionStorage.removeItem("auth_mode");
+          window.history.replaceState(null, "", urlRedirectEndpoint);
+        }
       }
-    }
-      break;
-    // Implicit flow redirect callback - refresh token - NOT POSSIBLE
-    default: {
-      console.error("Invalid Authorization mode.");
-    }
-  };
+        break;
+      // Implicit flow redirect callback - refresh token - NOT POSSIBLE
+      default: {
+        console.error("Invalid Authorization mode.");
+      }
+    };
+  }
 }
 
 function strRaw32Random() {
@@ -163,17 +177,19 @@ function base64UrlDecode(strBase64URL) {
   return atob(strBase64);
 }
 async function tokenAccessPKCE(authorization_code, verification_code) {
+  // Step (C) of Section 1.1 of RFC7636
   const params = new self.URLSearchParams([
     ["code", authorization_code ],
     ["grant_type", "authorization_code" ],
-    ["redirect_uri", urlRedirect ],
+    ["redirect_uri", urlRedirectEndpoint ],
     ["code_verifier", verification_code ],
-    ["client_id", strAppId ],
+    ["client_id", strClientId ],
   ]);
   const blobBody = new self.Blob([ params.toString() ], {type: "application/x-www-form-urlencoded" });
-  const req = createRequestPOST("https://api.dropboxapi.com/oauth2/token", blobBody);
+  const req = createRequestPOST(urlTokenEndpoint, blobBody);
   const resp = await fetch(req);
   const jsonRespBody = await resp.text();
+  // Step (D) of Section 1.1 of RFC7636
   const objResp = JSON.parse(jsonRespBody);
   return objResp["access_token"];
 }
@@ -181,12 +197,12 @@ async function tokenRefreshPKCE(authorization_code, verification_code) {
   const params = new self.URLSearchParams([
     ["code", authorization_code ],
     ["grant_type", "authorization_code" ],
-    ["redirect_uri", urlRedirect ],
+    ["redirect_uri", urlRedirectEndpoint ],
     ["code_verifier", verification_code ],
-    ["client_id", strAppId ],
+    ["client_id", strClientId ],
   ]);
   const blobBody = new self.Blob([ params.toString() ], {type: "application/x-www-form-urlencoded" });
-  const req = createRequestPOST("https://api.dropboxapi.com/oauth2/token", blobBody);
+  const req = createRequestPOST(urlTokenEndpoint, blobBody);
   const resp = await fetch(req);
   const jsonRespBody = await resp.text();
   const objResp = JSON.parse(jsonRespBody);
@@ -199,15 +215,75 @@ async function tokenAccessFromRefreshPKCE() {
   const params = new self.URLSearchParams([
     ["grant_type", "refresh_token" ],
     ["refresh_token", strRefreshToken ],
-    ["client_id", strAppId ],
+    ["client_id", strClientId ],
   ]);
   const blobBody = new self.Blob([ params.toString() ], {type: "application/x-www-form-urlencoded" });
-  const req = createRequestPOST("https://api.dropboxapi.com/oauth2/token", blobBody);
+  const req = createRequestPOST(urlTokenEndpoint, blobBody);
   const resp = await fetch(req);
   const jsonRespBody = await resp.text();
   const objResp = JSON.parse(jsonRespBody);
   console.log(objResp);
   return objResp["access_token"];
+}
+async function getPKCEAccessToken() {
+  // Step (A) of Section 1.1 of RFC7636
+  const code_verifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
+  const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(code_verifier));
+  const code_challenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
+  window.sessionStorage.setItem("code_verifier", code_verifier);
+  const params = new URLSearchParams([
+    [ "client_id", strClientId ],
+    [ "redirect_uri", urlRedirectEndpoint ],
+    [ "response_type", "code" ],
+    [ "code_challenge", code_challenge ],
+    [ "code_challenge_method", "S256" ],
+  ]);
+  const urlAuthorize = new URL(urlAuthorizationEndpoint + "?" + params);
+  window.sessionStorage.setItem("auth_mode", "PKCE Access");
+  window.location = urlAuthorize;
+  // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
+}
+async function getImplicitAccessToken() {
+  const params = new URLSearchParams([
+    [ "client_id", strClientId ],
+    [ "redirect_uri", urlRedirectEndpoint ],
+    [ "response_type", "token" ],
+  ]);
+  const urlAuthorize = new URL(urlAuthorizationEndpoint + "?" + params);
+  window.sessionStorage.setItem("auth_mode", "Implicit Access");
+  window.location = urlAuthorize;
+}
+async function getPKCERefreshToken() {
+  const code_verifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
+  const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(code_verifier));
+  const code_challenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
+  window.sessionStorage.setItem("code_verifier", code_verifier);
+  const params = new URLSearchParams([
+    [ "client_id", strClientId ],
+    [ "redirect_uri", urlRedirectEndpoint ],
+    [ "token_access_type", "offline" ],
+    [ "response_type", "code" ],
+    [ "code_challenge", code_challenge ],
+    [ "code_challenge_method", "S256" ],
+  ]);
+  const urlAuthorize = new URL(urlAuthorizationEndpoint + "?" + params);
+  window.sessionStorage.setItem("auth_mode", "PKCE Refresh");
+  window.location = urlAuthorize;
+}
+
+let spanAccessToken = null;
+let spanRefreshToken = null;
+function callbackAccessToken(strToken) {
+  if (spanAccessToken !== null) {
+    spanAccessToken.innerHTML = "";
+    spanAccessToken.append(strAccessToken);
+  }
+}
+function callbackRefreshToken(strToken) {
+  if (spanRefreshToken !== null) {
+    spanRefreshToken.innerHTML = "";
+    spanRefreshToken.append(strRefreshToken);
+  }
 }
 
 function start([ evtWindow ]) {
@@ -233,37 +309,13 @@ function start([ evtWindow ]) {
     const btnGetImplicitAccessToken = document.createElement("button");
     btnGetImplicitAccessToken.innerHTML = "Get Implicit Access Token";
     btnGetImplicitAccessToken.addEventListener("click", function (evt) {
-      (async function () {
-        const params = new URLSearchParams([
-          [ "client_id", strAppId ],
-          [ "redirect_uri", urlRedirect ],
-          [ "response_type", "token" ],
-        ]);
-        const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
-        window.sessionStorage.setItem("auth_mode", "Implicit Access");
-        window.location = urlAuthorize;
-      })();
+      getImplicitAccessToken();
     });
     pAccessToken.appendChild(btnGetImplicitAccessToken);
     const btnGetPKCEAccessToken = document.createElement("button");
     btnGetPKCEAccessToken.innerHTML = "Get PKCE Access Token";
     btnGetPKCEAccessToken.addEventListener("click", function (evt) {
-      (async function () {
-        const code_verifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
-        const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(code_verifier));
-        const code_challenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
-        window.sessionStorage.setItem("code_verifier", code_verifier);
-        const params = new URLSearchParams([
-          [ "client_id", strAppId ],
-          [ "redirect_uri", urlRedirect ],
-          [ "response_type", "code" ],
-          [ "code_challenge", code_challenge ],
-          [ "code_challenge_method", "S256" ],
-        ]);
-        const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
-        window.sessionStorage.setItem("auth_mode", "PKCE Access");
-        window.location = urlAuthorize;
-      })();
+      getPKCEAccessToken();
     });
     pAccessToken.appendChild(btnGetPKCEAccessToken);
     spanAccessToken = document.createElement("span");
@@ -284,23 +336,7 @@ function start([ evtWindow ]) {
     const btnGetPKCERefreshToken = document.createElement("button");
     btnGetPKCERefreshToken.innerHTML = "Get PKCE Refresh Token";
     btnGetPKCERefreshToken.addEventListener("click", function (evt) {
-      (async function () {
-        const code_verifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
-        const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(code_verifier));
-        const code_challenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
-        window.sessionStorage.setItem("code_verifier", code_verifier);
-        const params = new URLSearchParams([
-          [ "client_id", strAppId ],
-          [ "redirect_uri", urlRedirect ],
-          [ "token_access_type", "offline" ],
-          [ "response_type", "code" ],
-          [ "code_challenge", code_challenge ],
-          [ "code_challenge_method", "S256" ],
-        ]);
-        const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
-        window.sessionStorage.setItem("auth_mode", "PKCE Refresh");
-        window.location = urlAuthorize;
-      })();
+      getPKCERefreshToken();
     });
     pRefreshToken.appendChild(btnGetPKCERefreshToken);
     const btnCreateAccessToken = document.createElement("button");
