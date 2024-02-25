@@ -61,13 +61,15 @@ function createRequestPOST(endpoint, body, headers) {
 function start([ evtWindow ]) {
   try {
     const urlThis = new self.URL(window.location);
-    console.log(window.location);
-    console.log(urlThis);
+    const paramsThis = urlThis.searchParams;
+    if (paramsThis.has("code")) {
+      const authorization_code = paramsThis.get("code");
+      const code_verifier = window.sessionStorage.getItem("code_verifier");
+      await tokenPKCE(authorization_code, urlThis.toString(), code_verifier, "m1po2j6iw2k75n4");
+    }
     const fragment = urlThis.hash.substring(1);
-    const paramsThis = new self.URLSearchParams(fragment);
-    console.log(fragment);
-    console.log(paramsThis);
-    let strToken = paramsThis.get("access_token");
+    const paramsThisFragment = new self.URLSearchParams(fragment);
+    let strToken = paramsThisFragment.get("access_token");
     
     const btnSetToken = document.createElement("button");
     btnSetToken.innerHTML = "Set Token";
@@ -85,6 +87,7 @@ function start([ evtWindow ]) {
         const code_verifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
         const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(code_verifier));
         const code_challenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
+        window.sessionStorage.setItem("code_verifier", code_verifier);
         alert("code_verifier: " + code_verifier + " code_challenge: " + code_challenge);
         const params = new URLSearchParams([
           [ "client_id", "m1po2j6iw2k75n4" ],
@@ -95,8 +98,6 @@ function start([ evtWindow ]) {
         ]);
         const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
         window.location = urlAuthorize;
-
-//        await tokenPKCE(authorization_code, urlThis.toString(), code_verifier, "m1po2j6iw2k75n4");
       })();
     });
     document.body.appendChild(btnGetPKCEToken);
@@ -176,6 +177,7 @@ function start([ evtWindow ]) {
       const req = createRequestPOST("https://api.dropbox.com/oauth2/token", blobBody);
       const resp = await fetch(req);
       console.log(resp);
+      console.log(await resp.text());
     }
     async function list_folder() {
       const objReqBody = {
