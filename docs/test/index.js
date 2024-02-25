@@ -133,7 +133,7 @@ function start([ evtWindow, OAuth2 ]) {
     });
     pRefreshToken.appendChild(btnCreateAccessToken);
     const spanRefreshToken = document.createElement("span");
-    spanRefreshToken.append(strRefreshToken);
+    spanRefreshToken.append(OAuth2.getRefreshToken());
     OAuth2.callbackRefreshToken = function (strToken) {
       spanRefreshToken.innerHTML = "";
       spanRefreshToken.append(strToken);
