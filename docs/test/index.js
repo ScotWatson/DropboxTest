@@ -71,7 +71,7 @@ function start([ evtWindow ]) {
       const authorization_code = paramsThis.get("code");
       const code_verifier = window.sessionStorage.getItem("code_verifier");
       (async function () {
-        await tokenPKCE(authorization_code, urlThis.origin + urlThis.pathname, code_verifier, strAppId);
+        await tokenAccessPKCE(authorization_code, urlThis.origin + urlThis.pathname, code_verifier, strAppId);
       })();
     }
     const fragment = urlThis.hash.substring(1);
@@ -214,7 +214,7 @@ function start([ evtWindow ]) {
       const strBase64 = strBase64URL.replaceAll("-", "+").replaceAll("_", "/");
       return atob(strBase64);
     }
-    async function tokenPKCE(authorization_code, redirect_uri, verification_code, app_key) {
+    async function tokenAccessPKCE(authorization_code, redirect_uri, verification_code, app_key) {
       const params = new self.URLSearchParams([
         ["code", authorization_code ],
         ["grant_type", "authorization_code" ],
@@ -229,7 +229,7 @@ function start([ evtWindow ]) {
       const objResp = JSON.parse(jsonRespBody);
       strToken = objResp["access_token"];
     }
-    async function tokenPKCE(authorization_code, redirect_uri, verification_code, app_key) {
+    async function tokenRefreshPKCE(authorization_code, redirect_uri, verification_code, app_key) {
       const params = new self.URLSearchParams([
         ["code", authorization_code ],
         ["grant_type", "authorization_code" ],
