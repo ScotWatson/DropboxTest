@@ -91,6 +91,7 @@ function start([ evtWindow, OAuth2 ]) {
     const btnGetImplicitAccessToken = document.createElement("button");
     btnGetImplicitAccessToken.innerHTML = "Get Implicit Access Token";
     btnGetImplicitAccessToken.addEventListener("click", function (evt) {
+      console.log(OAuth2.urlAuthorizationEndpoint);
       OAuth2.getImplicitAccessToken();
     });
     pAccessToken.appendChild(btnGetImplicitAccessToken);
