@@ -67,9 +67,9 @@ const strThisFragment = urlThis.hash.substring(1);
 function start([ evtWindow, OAuth2 ]) {
   try {
     OAuth2.initialize({
-      strClientId = "m1po2j6iw2k75n4";
-      urlAuthorizationEndpoint = new self.URL("https://www.dropbox.com/oauth2/authorize");
-      urlTokenEndpoint = new self.URL("https://api.dropboxapi.com/oauth2/token");
+      strClientId: "m1po2j6iw2k75n4",
+      urlAuthorizationEndpoint: new self.URL("https://www.dropbox.com/oauth2/authorize"),
+      urlTokenEndpoint: new self.URL("https://api.dropboxapi.com/oauth2/token"),
     });
     OAuth2.setRevokeEndpoint(new URL("https://api.dropboxapi.com/2/auth/token/revoke"));
     OAuth2.parseRedirectParameters();
