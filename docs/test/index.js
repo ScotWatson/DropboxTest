@@ -66,6 +66,7 @@ const strThisFragment = urlThis.hash.substring(1);
 
 function start([ evtWindow, OAuth2 ]) {
   try {
+    console.log(OAuth2);
     OAuth2.initialize({
       strClientId: "m1po2j6iw2k75n4",
       urlAuthorizationEndpoint: new self.URL("https://www.dropbox.com/oauth2/authorize"),
