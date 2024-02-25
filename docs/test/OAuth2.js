@@ -48,6 +48,10 @@ function createRequestPOST(endpoint, body, headers) {
 // - resource owner password credentials
 // - client credentials
 
+const urlThis = new self.URL(window.location);
+const paramsThis = urlThis.searchParams;
+const strThisFragment = urlThis.hash.substring(1);
+
 // Below is the "Client Identifier" referred to in Section 2.2 of RFC 6749. This is also referred to by some as the "App Id".
 // All methods in the library require the client identifier and therefore assume the client is registered. Unregistered clients per Section 2.4 of RFC 6749 are not supported.
 const strClientId = "m1po2j6iw2k75n4";
@@ -57,10 +61,6 @@ const urlAuthorizationEndpoint = new self.URL("https://www.dropbox.com/oauth2/au
 const urlTokenEndpoint = new self.URL("https://api.dropboxapi.com/oauth2/token");
 // Below is the "Redirect Endpoint" per Section 3 of RFC 6749. Section 3.1.2 of RFC 6749 provides details. It is taken to be the current location.
 const urlRedirectEndpoint = new self.URL(urlThis.origin + urlThis.pathname);
-
-const urlThis = new self.URL(window.location);
-const paramsThis = urlThis.searchParams;
-const strThisFragment = urlThis.hash.substring(1);
 
 let strAccessToken = "";
 let strRefreshToken = "";
