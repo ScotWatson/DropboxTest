@@ -71,7 +71,7 @@ function start([ evtWindow ]) {
   try {
     const auth_mode = window.sessionStorage.getItem("auth_mode");
     if (auth_mode) {
-      case (auth_mode) {
+      switch (auth_mode) {
         case "PKCE Access": {
           // PKCE flow redirect callback - access token
           if (paramsThis.has("code")) {
