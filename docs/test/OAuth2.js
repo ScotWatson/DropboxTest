@@ -65,6 +65,9 @@ const urlRedirectEndpoint = new self.URL(urlThis.origin + urlThis.pathname);
 let strAccessToken = "";
 let strRefreshToken = "";
 
+export let callbackAccessToken;
+export let callbackRefreshToken;
+
 export function setAccessToken(strToken) {
   strAccessToken = strToken;
   callbackAccessToken(strAccessToken);
@@ -256,13 +259,16 @@ export async function getPKCERefreshToken() {
   window.sessionStorage.setItem("auth_mode", "PKCE Refresh");
   window.location = urlAuthorize;
 }
+const urlRevokeEndpoint = new URL("https://api.dropboxapi.com/2/auth/token/revoke");
 export async function revokeToken(strToken) {
   const headers = [ [ "Authorization", "Bearer " + strToken ] ];
-  const reqRevokeToken = createRequestPOST("https://api.dropboxapi.com/2/auth/token/revoke", null, headers);
+  const reqRevokeToken = createRequestPOST(urlRevokeEndpoint, null, headers);
   const respRevokeToken = await fetch(reqRevokeToken);
   console.log(respRevokeToken);
   if (respRevokeToken.status === 200) {
     console.log("Token Revoked");
+    OAuth2.setAccessToken("");
+    OAuth2.setRefreshToken("");
   } else {
     console.log("Token Not Revoked");
   }
