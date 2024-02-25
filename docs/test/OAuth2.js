@@ -70,11 +70,15 @@ export let callbackRefreshToken;
 
 export function setAccessToken(strToken) {
   strAccessToken = strToken;
-  callbackAccessToken(strAccessToken);
+  if (typeof callbackAccessToken === "function") {
+    callbackAccessToken(strAccessToken);
+  }
 }
 export function setRefreshToken(strToken) {
   strRefreshToken = strToken;
-  callbackRefreshToken(strRefreshToken);
+  if (typeof callbackAccessToken === "function") {
+    callbackRefreshToken(strRefreshToken);
+  }
 }
 export function getAccessToken() {
   return strAccessToken;
