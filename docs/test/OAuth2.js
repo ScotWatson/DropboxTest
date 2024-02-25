@@ -82,14 +82,12 @@ export function setCallbackRefreshToken(callback) {
 export function setAccessToken(strToken) {
   strAccessToken = strToken;
   if (typeof callbackAccessToken === "function") {
-    console.log("Access Token Callback");
     callbackAccessToken(strAccessToken);
   }
 }
 export function setRefreshToken(strToken) {
   strRefreshToken = strToken;
   if (typeof callbackAccessToken === "function") {
-    console.log("Refresh Token Callback");
     callbackRefreshToken(strRefreshToken);
   }
 }
@@ -197,6 +195,7 @@ async function tokenAccessPKCE(authorization_code, verification_code) {
   const jsonRespBody = await resp.text();
   // Step (D) of Section 1.1 of RFC7636
   const objResp = JSON.parse(jsonRespBody);
+  console.log(objResp);
   return objResp["access_token"];
 }
 async function tokenRefreshPKCE(authorization_code, verification_code) {
@@ -212,6 +211,7 @@ async function tokenRefreshPKCE(authorization_code, verification_code) {
   const resp = await fetch(req);
   const jsonRespBody = await resp.text();
   const objResp = JSON.parse(jsonRespBody);
+  console.log(objResp);
   return {
     strNewAccessToken: objResp["access_token"],
     strNewRefreshToken: objResp["refresh_token"],
