@@ -107,6 +107,7 @@ function start([ evtWindow, OAuth2 ]) {
     const spanAccessToken = document.createElement("span");
     spanAccessToken.append(OAuth2.getAccessToken());
     OAuth2.setCallbackAccessToken(function (strToken) {
+      console.log("callbackAccessToken");
       spanAccessToken.innerHTML = "";
       spanAccessToken.append(strToken);
     });
@@ -140,6 +141,7 @@ function start([ evtWindow, OAuth2 ]) {
     const spanRefreshToken = document.createElement("span");
     spanRefreshToken.append(OAuth2.getRefreshToken());
     OAuth2.setCallbackRefreshToken(function (strToken) {
+      console.log("callbackRefreshToken");
       spanRefreshToken.innerHTML = "";
       spanRefreshToken.append(strToken);
     });
