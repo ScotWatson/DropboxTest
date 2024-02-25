@@ -71,7 +71,10 @@ function start([ evtWindow ]) {
     }
     const fragment = urlThis.hash.substring(1);
     const paramsThisFragment = new self.URLSearchParams(fragment);
-    let strToken = paramsThisFragment.get("access_token");
+    let strToken = "";
+    if (paramsThisFragment.get("access_token")) {
+      strToken = paramsThisFragment.get("access_token");
+    }
     
     const btnSetToken = document.createElement("button");
     btnSetToken.innerHTML = "Set Token";
@@ -178,8 +181,9 @@ function start([ evtWindow ]) {
       const blobBody = new self.Blob([ params.toString() ], {type: "application/x-www-form-urlencoded" });
       const req = createRequestPOST("https://api.dropboxapi.com/oauth2/token", blobBody);
       const resp = await fetch(req);
-      console.log(resp);
-      console.log(await resp.text());
+      const strRespBody = await resp.text();
+      const paramsResp = new self.URLSearchParams(strRespBody);
+      strToken = paramsResp.get("access_token");
     }
     async function list_folder() {
       const objReqBody = {
