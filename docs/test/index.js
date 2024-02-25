@@ -176,7 +176,7 @@ function start([ evtWindow ]) {
         ["client_id", app_key ],
       ]);
       const blobBody = new self.Blob([ params.toString() ], {type: "application/x-www-form-urlencoded" });
-      const req = createRequestPOST("https://api.dropbox.com/oauth2/token", blobBody);
+      const req = createRequestPOST("https://api.dropboxapi.com/oauth2/token", blobBody);
       const resp = await fetch(req);
       console.log(resp);
       console.log(await resp.text());
