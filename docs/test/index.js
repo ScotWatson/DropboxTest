@@ -103,8 +103,15 @@ if (auth_mode) {
       // PKCE flow redirect callback - refresh token
       if (paramsThis.has("code")) {
         alert("PKCE flow redirect callback - refresh token");
-        setRefreshToken(paramsThis.get("code"));
+        const authorization_code = paramsThis.get("code");
+        const code_verifier = window.sessionStorage.getItem("code_verifier");
+        (async function () {
+          const { strNewAccessToken, strNewRefreshToken } = await tokenRefreshPKCE(authorization_code, code_verifier);
+          setAccessToken(strNewAccessToken);
+          setRefreshToken(strNewRefreshToken);
+        })();
         window.sessionStorage.removeItem("auth_mode");
+        window.sessionStorage.removeItem("code_verifier");
       }
     }
       break;
@@ -166,6 +173,24 @@ async function tokenAccessPKCE(authorization_code, verification_code) {
   const jsonRespBody = await resp.text();
   const objResp = JSON.parse(jsonRespBody);
   return objResp["access_token"];
+}
+async function tokenRefreshPKCE(authorization_code, verification_code) {
+  const params = new self.URLSearchParams([
+    ["code", authorization_code ],
+    ["grant_type", "authorization_code" ],
+    ["redirect_uri", urlRedirect ],
+    ["code_verifier", verification_code ],
+    ["client_id", strAppId ],
+  ]);
+  const blobBody = new self.Blob([ params.toString() ], {type: "application/x-www-form-urlencoded" });
+  const req = createRequestPOST("https://api.dropboxapi.com/oauth2/token", blobBody);
+  const resp = await fetch(req);
+  const jsonRespBody = await resp.text();
+  const objResp = JSON.parse(jsonRespBody);
+  return {
+    strNewAccessToken: objResp["access_token"],
+    strNewRefreshToken: objResp["refresh_token"],
+  };
 }
 async function tokenAccessFromRefreshPKCE() {
   const params = new self.URLSearchParams([
@@ -265,8 +290,8 @@ function start([ evtWindow ]) {
           [ "redirect_uri", urlRedirect ],
           [ "token_access_type", "offline" ],
           [ "response_type", "code" ],
-//          [ "code_challenge", code_challenge ],
-//          [ "code_challenge_method", "S256" ],
+          [ "code_challenge", code_challenge ],
+          [ "code_challenge_method", "S256" ],
         ]);
         const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
         window.sessionStorage.setItem("auth_mode", "PKCE Refresh");
