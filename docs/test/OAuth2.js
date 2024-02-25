@@ -246,7 +246,6 @@ export async function getImplicitAccessToken() {
     [ "redirect_uri", urlRedirectEndpoint ],
     [ "response_type", "token" ],
   ]);
-  console.log(urlAuthorizationEndpoint);
   const urlAuthorize = new URL(urlAuthorizationEndpoint + "?" + params);
   window.sessionStorage.setItem("auth_mode", "Implicit Access");
   window.location = urlAuthorize;
@@ -282,8 +281,8 @@ export async function revokeToken(strToken) {
   console.log(respRevokeToken);
   if (respRevokeToken.status === 200) {
     console.log("Token Revoked");
-    OAuth2.setAccessToken("");
-    OAuth2.setRefreshToken("");
+    setAccessToken("");
+    setRefreshToken("");
   } else {
     console.log("Token Not Revoked");
   }
