@@ -186,7 +186,7 @@ function start([ evtWindow ]) {
   try {
     const pAccessToken = document.createElement("p");
     const btnSetAccessToken = document.createElement("button");
-    btnSetAccessToken.innerHTML = "Set Token";
+    btnSetAccessToken.innerHTML = "Set Access Token";
     btnSetAccessToken.addEventListener("click", function (evt) {
       strNewToken = window.prompt("Enter the access token: ");
       if (strNewToken) {
@@ -244,7 +244,7 @@ function start([ evtWindow ]) {
 
     const pRefreshToken = document.createElement("p");
     const btnSetRefreshToken = document.createElement("button");
-    btnSetRefreshToken.innerHTML = "Set Token";
+    btnSetRefreshToken.innerHTML = "Set Refresh Token";
     btnSetRefreshToken.addEventListener("click", function (evt) {
       strNewToken = window.prompt("Enter the refresh token: ");
       if (strNewToken) {
@@ -281,6 +281,7 @@ function start([ evtWindow ]) {
         setAccessToken(await tokenAccessFromRefreshPKCE());
       })();
     });
+    pRefreshToken.appendChild(btnCreateAccessToken);
     const btnRevokeRefreshToken = document.createElement("button");
     btnRevokeRefreshToken.innerHTML = "Revoke Refresh Token";
     btnRevokeRefreshToken.addEventListener("click", function (evt) {
