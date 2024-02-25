@@ -62,7 +62,7 @@ let urlTokenEndpoint;
 // Below is the "Redirect Endpoint" per Section 3 of RFC 6749. Section 3.1.2 of RFC 6749 provides details. It is taken to be the current location.
 const urlRedirectEndpoint = new self.URL(urlThis.origin + urlThis.pathname);
 
-function initialize(args) {
+export function initialize(args) {
   { strClientId, urlAuthorizationEndpoint, urlTokenEndpoint} = args;
 }
 
