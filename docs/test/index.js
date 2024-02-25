@@ -25,6 +25,10 @@ const asyncOAuth2 = import("./OAuth2.js");
 
 (async function () {
   const OAuth2 = await asyncOAuth2;
+  strClientId = "m1po2j6iw2k75n4";
+  OAuth2.urlAuthorizationEndpoint = new self.URL("https://www.dropbox.com/oauth2/authorize");
+  OAuth2.urlTokenEndpoint = new self.URL("https://api.dropboxapi.com/oauth2/token");
+  OAuth2.urlRevokeEndpoint = new URL("https://api.dropboxapi.com/2/auth/token/revoke");
   OAuth2.parseRedirectParameters();
 })();
 
@@ -100,7 +104,7 @@ function start([ evtWindow, OAuth2 ]) {
     });
     pAccessToken.appendChild(btnGetPKCEAccessToken);
     const spanAccessToken = document.createElement("span");
-    spanAccessToken.append(OAuth2.getAccessToken);
+    spanAccessToken.append(OAuth2.getAccessToken());
     OAuth2.callbackAccessToken = function (strToken) {
       spanAccessToken.innerHTML = "";
       spanAccessToken.append(strToken);
