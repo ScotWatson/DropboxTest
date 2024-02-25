@@ -242,6 +242,7 @@ export async function getImplicitAccessToken() {
     [ "redirect_uri", urlRedirectEndpoint ],
     [ "response_type", "token" ],
   ]);
+  console.log(urlAuthorizationEndpoint);
   const urlAuthorize = new URL(urlAuthorizationEndpoint + "?" + params);
   window.sessionStorage.setItem("auth_mode", "Implicit Access");
   window.location = urlAuthorize;
