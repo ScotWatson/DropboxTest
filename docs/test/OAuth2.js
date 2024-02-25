@@ -69,8 +69,15 @@ export function initialize(args) {
 let strAccessToken = "";
 let strRefreshToken = "";
 
-export let callbackAccessToken;
-export let callbackRefreshToken;
+let callbackAccessToken;
+let callbackRefreshToken;
+
+export function setCallbackAccessToken(callback) {
+  callbackAccessToken = callback
+}
+export function setCallbackRefreshToken(callback) {
+  callbackRefreshToken = callback
+}
 
 export function setAccessToken(strToken) {
   strAccessToken = strToken;
