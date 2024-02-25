@@ -262,11 +262,11 @@ function start([ evtWindow ]) {
         window.sessionStorage.setItem("code_verifier", code_verifier);
         const params = new URLSearchParams([
           [ "client_id", strAppId ],
-          [ "redirect_uri", urlRedirect ],
+//          [ "redirect_uri", urlRedirect ],
           [ "token_access_type", "offline" ],
           [ "response_type", "code" ],
-          [ "code_challenge", code_challenge ],
-          [ "code_challenge_method", "S256" ],
+//          [ "code_challenge", code_challenge ],
+//          [ "code_challenge_method", "S256" ],
         ]);
         const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
         window.sessionStorage.setItem("auth_mode", "PKCE Refresh");
