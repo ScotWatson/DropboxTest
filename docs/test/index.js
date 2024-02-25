@@ -209,6 +209,14 @@ async function tokenAccessFromRefreshPKCE() {
 
 function start([ evtWindow ]) {
   try {
+    const btnRevokeTokens = document.createElement("button");
+    btnRevokeTokens.innerHTML = "Revoke Tokens";
+    btnRevokeTokens.addEventListener("click", function (evt) {
+      revokeToken(strAccessToken);
+      setAccessToken("");
+      setRefreshToken("");
+    });
+    document.body.appendChild(btnRevokeTokens);
     const pAccessToken = document.createElement("p");
     const btnSetAccessToken = document.createElement("button");
     btnSetAccessToken.innerHTML = "Set Access Token";
@@ -255,13 +263,6 @@ function start([ evtWindow ]) {
       })();
     });
     pAccessToken.appendChild(btnGetPKCEAccessToken);
-    const btnRevokeAccessToken = document.createElement("button");
-    btnRevokeAccessToken.innerHTML = "Revoke Access Token";
-    btnRevokeAccessToken.addEventListener("click", function (evt) {
-      revokeToken(strAccessToken);
-      setAccessToken("");
-    });
-    pAccessToken.appendChild(btnRevokeAccessToken);
     spanAccessToken = document.createElement("span");
     spanAccessToken.append(strAccessToken);
     pAccessToken.appendChild(spanAccessToken);
@@ -307,13 +308,6 @@ function start([ evtWindow ]) {
       })();
     });
     pRefreshToken.appendChild(btnCreateAccessToken);
-    const btnRevokeRefreshToken = document.createElement("button");
-    btnRevokeRefreshToken.innerHTML = "Revoke Refresh Token";
-    btnRevokeRefreshToken.addEventListener("click", function (evt) {
-      revokeToken(strRefreshToken);
-      setRefreshToken("");
-    });
-    pRefreshToken.appendChild(btnRevokeRefreshToken);
     spanRefreshToken = document.createElement("span");
     spanRefreshToken.append(strRefreshToken);
     pRefreshToken.appendChild(spanRefreshToken);
