@@ -73,21 +73,23 @@ let callbackAccessToken;
 let callbackRefreshToken;
 
 export function setCallbackAccessToken(callback) {
-  callbackAccessToken = callback
+  callbackAccessToken = callback;
 }
 export function setCallbackRefreshToken(callback) {
-  callbackRefreshToken = callback
+  callbackRefreshToken = callback;
 }
 
 export function setAccessToken(strToken) {
   strAccessToken = strToken;
   if (typeof callbackAccessToken === "function") {
+    console.log("Access Token Callback");
     callbackAccessToken(strAccessToken);
   }
 }
 export function setRefreshToken(strToken) {
   strRefreshToken = strToken;
   if (typeof callbackAccessToken === "function") {
+    console.log("Refresh Token Callback");
     callbackRefreshToken(strRefreshToken);
   }
 }
