@@ -65,7 +65,9 @@ function start([ evtWindow ]) {
     if (paramsThis.has("code")) {
       const authorization_code = paramsThis.get("code");
       const code_verifier = window.sessionStorage.getItem("code_verifier");
-      await tokenPKCE(authorization_code, urlThis.toString(), code_verifier, "m1po2j6iw2k75n4");
+      (async function () {
+        await tokenPKCE(authorization_code, urlThis.toString(), code_verifier, "m1po2j6iw2k75n4");
+      })();
     }
     const fragment = urlThis.hash.substring(1);
     const paramsThisFragment = new self.URLSearchParams(fragment);
