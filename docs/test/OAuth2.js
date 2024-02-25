@@ -256,3 +256,14 @@ export async function getPKCERefreshToken() {
   window.sessionStorage.setItem("auth_mode", "PKCE Refresh");
   window.location = urlAuthorize;
 }
+export async function revokeToken(strToken) {
+  const headers = [ [ "Authorization", "Bearer " + strToken ] ];
+  const reqRevokeToken = createRequestPOST("https://api.dropboxapi.com/2/auth/token/revoke", null, headers);
+  const respRevokeToken = await fetch(reqRevokeToken);
+  console.log(respRevokeToken);
+  if (respRevokeToken.status === 200) {
+    console.log("Token Revoked");
+  } else {
+    console.log("Token Not Revoked");
+  }
+}
