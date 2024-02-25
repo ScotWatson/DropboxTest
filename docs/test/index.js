@@ -102,16 +102,16 @@ function start([ evtWindow ]) {
           if (paramsThisFragment.get("access_token")) {
             // Implicit flow redirect callback - access token
             alert("Implicit flow redirect callback - access token");
-            strAccessToken = paramsThisFragment.get("access_token");
+            setAccessToken(paramsThisFragment.get("access_token"));
             window.sessionStorage.removeItem("auth_mode");
           }
         }
           break;
         case "Implicit Refresh": {
           if (paramsThisFragment.get("access_token")) {
-            // Implicit flow redirect callback - access token
-            alert("Implicit flow redirect callback - access token");
-            strAccessToken = paramsThisFragment.get("access_token");
+            // Implicit flow redirect callback - refresh token
+            alert("Implicit flow redirect callback - refresh token");
+            setRefreshToken(paramsThisFragment.get("access_token"));
             window.sessionStorage.removeItem("auth_mode");
           }
         }
@@ -126,8 +126,9 @@ function start([ evtWindow ]) {
     const btnSetAccessToken = document.createElement("button");
     btnSetAccessToken.innerHTML = "Set Token";
     btnSetAccessToken.addEventListener("click", function (evt) {
-      while (!strAccessToken) {
-        strAccessToken = window.prompt("Enter the access token: ");
+      strNewToken = window.prompt("Enter the access token: ");
+      if (strNewToken) {
+        setAccessToken(strNewToken);
       }
     });
     pAccessToken.appendChild(btnSetAccessToken);
@@ -167,17 +168,30 @@ function start([ evtWindow ]) {
       })();
     });
     pAccessToken.appendChild(btnGetPKCEAccessToken);
+    const btnRevokeAccessToken = document.createElement("button");
+    btnRevokeAccessToken.innerHTML = "Revoke RefreshToken";
+    btnRevokeAccessToken.addEventListener("click", function (evt) {
+      revokeToken(strAccessToken);
+      setAccessToken("");
+    });
+    pAccessToken.appendChild(btnRevokeAccessToken);
     const spanAccessToken = document.createElement("span");
     spanAccessToken.append(strAccessToken);
     pAccessToken.appendChild(spanAccessToken);
+    function setAccessToken(token) {
+      strAccessToken = token;
+      spanAccessToken.innerHTML = "";
+      spanAccessToken.append(strAccessToken);
+    }
     document.body.appendChild(pAccessToken);
 
     const pRefreshToken = document.createElement("p");
     const btnSetRefreshToken = document.createElement("button");
     btnSetRefreshToken.innerHTML = "Set Token";
     btnSetRefreshToken.addEventListener("click", function (evt) {
-      while (!strRefreshToken) {
-        strRefreshToken = window.prompt("Enter the refresh token: ");
+      strNewToken = window.prompt("Enter the refresh token: ");
+      if (strNewToken) {
+        setRefreshToken(strNewToken);
       }
     });
     pRefreshToken.appendChild(btnSetRefreshToken);
@@ -219,6 +233,21 @@ function start([ evtWindow ]) {
       })();
     });
     pRefreshToken.appendChild(btnGetPKCERefreshToken);
+    const btnRevokeRefreshToken = document.createElement("button");
+    btnRevokeRefreshToken.innerHTML = "Revoke Refresh Token";
+    btnRevokeRefreshToken.addEventListener("click", function (evt) {
+      revokeToken(strRefreshToken);
+      setRefreshToken("");
+    });
+    pRefreshToken.appendChild(btnRevokeRefreshToken);
+    const spanRefreshToken = document.createElement("span");
+    spanRefreshToken.append(strRefreshToken);
+    pRefreshToken.appendChild(spanRefreshToken);
+    function setRefreshToken(token) {
+      strRefreshToken = token;
+      spanRefreshToken.innerHTML = "";
+      spanRefreshToken.append(strRefreshToken);
+    }
     document.body.appendChild(pRefreshToken);
 
     const btnListFolder = document.createElement("button");
@@ -236,12 +265,6 @@ function start([ evtWindow ]) {
       download(inpPath.value);
     });
     document.body.appendChild(btnDownload);
-    const btnRevokeToken = document.createElement("button");
-    btnRevokeToken.innerHTML = "Revoke Token";
-    btnRevokeToken.addEventListener("click", function (evt) {
-      revokeToken();
-    });
-    document.body.appendChild(btnRevokeToken);
     function strRaw32Random() {
       const buffer = new Uint8Array(32);
       self.crypto.getRandomValues(buffer);
@@ -282,7 +305,7 @@ function start([ evtWindow ]) {
       const resp = await fetch(req);
       const jsonRespBody = await resp.text();
       const objResp = JSON.parse(jsonRespBody);
-      strAccessToken = objResp["access_token"];
+      setAccessToken(objResp["access_token"]);
     }
     async function tokenRefreshPKCE(refresh_token, app_key) {
       const params = new self.URLSearchParams([
@@ -296,7 +319,7 @@ function start([ evtWindow ]) {
       const jsonRespBody = await resp.text();
       const objResp = JSON.parse(jsonRespBody);
       console.log(objResp);
-      strRefreshToken = objResp["access_token"];
+      setRefreshToken(objResp["access_token"]);
     }
     async function list_folder() {
       const objReqBody = {
@@ -335,8 +358,8 @@ function start([ evtWindow ]) {
         console.log(strRespBody);
       }
     }
-    async function revokeToken() {
-      const headers = [ [ "Authorization", "Bearer " + strAccessToken ] ];
+    async function revokeToken(strToken) {
+      const headers = [ [ "Authorization", "Bearer " + strToken ] ];
       const reqRevokeToken = createRequestPOST("https://api.dropboxapi.com/2/auth/token/revoke", null, headers);
       const respRevokeToken = await fetch(reqRevokeToken);
       console.log(respRevokeToken);
