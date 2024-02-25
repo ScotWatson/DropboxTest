@@ -54,13 +54,17 @@ const strThisFragment = urlThis.hash.substring(1);
 
 // Below is the "Client Identifier" referred to in Section 2.2 of RFC 6749. This is also referred to by some as the "App Id".
 // All methods in the library require the client identifier and therefore assume the client is registered. Unregistered clients per Section 2.4 of RFC 6749 are not supported.
-export let strClientId;
+let strClientId;
 // Below is the "Authorization Endpoint" per Section 3 of RFC 6749. Section 3.1 of RFC 6749 provides details.
-export let urlAuthorizationEndpoint;
+let urlAuthorizationEndpoint;
 // Below is the "Token Endpoint" per Section 3 of RFC 6749. Section 3.2 of RFC 6749 provides details.
-export let urlTokenEndpoint;
+let urlTokenEndpoint;
 // Below is the "Redirect Endpoint" per Section 3 of RFC 6749. Section 3.1.2 of RFC 6749 provides details. It is taken to be the current location.
 const urlRedirectEndpoint = new self.URL(urlThis.origin + urlThis.pathname);
+
+function initialize(args) {
+  { strClientId, urlAuthorizationEndpoint, urlTokenEndpoint} = args;
+}
 
 let strAccessToken = "";
 let strRefreshToken = "";
@@ -265,6 +269,12 @@ export async function getPKCERefreshToken() {
   window.location = urlAuthorize;
 }
 export let urlRevokeEndpoint;
+function setRevokeEndpoint(urlNewRevokeEndpoint) {
+  urlRevokeEndpoint = urlNewRevokeEndpoint;
+}
+function getRevokeEndpoint() {
+  return urlRevokeEndpoint;
+}
 export async function revokeToken(strToken) {
   const headers = [ [ "Authorization", "Bearer " + strToken ] ];
   const reqRevokeToken = createRequestPOST(urlRevokeEndpoint, null, headers);
