@@ -62,36 +62,90 @@ const strAppId = "m1po2j6iw2k75n4";
 const urlThis = new self.URL(window.location);
 const paramsThis = urlThis.searchParams;
 const urlRedirect = urlThis.origin + urlThis.pathname;
+const strThisFragment = urlThis.hash.substring(1);
+const paramsThisFragment = new self.URLSearchParams(strThisFragment);
+let strAccessToken = "";
+let strRefreshToken = "";
 
 function start([ evtWindow ]) {
   try {
-    if (paramsThis.has("code")) {
-      // PKCE flow redirect callback - access token
-      alert("PKCE flow redirect callback - access token");
-      const authorization_code = paramsThis.get("code");
-      const code_verifier = window.sessionStorage.getItem("code_verifier");
-      (async function () {
-        await tokenAccessPKCE(authorization_code, urlThis.origin + urlThis.pathname, code_verifier, strAppId);
-      })();
+    const auth_mode = window.sessionStorage.getItem("auth_mode");
+    if (auth_mode) {
+      case (auth_mode) {
+        case "PKCE Access": {
+          // PKCE flow redirect callback - access token
+          if (paramsThis.has("code")) {
+            alert("PKCE flow redirect callback - access token");
+            const authorization_code = paramsThis.get("code");
+            const code_verifier = window.sessionStorage.getItem("code_verifier");
+            (async function () {
+              await tokenAccessPKCE(authorization_code, urlRedirect, code_verifier, strAppId);
+            })();
+            window.sessionStorage.removeItem("auth_mode");
+            window.sessionStorage.removeItem("code_verifier");
+          }
+        }
+          break;
+        case "PKCE Refresh": {
+          // PKCE flow redirect callback - refresh token
+          if (paramsThis.has("code")) {
+            alert("PKCE flow redirect callback - refresh token");
+            const refresh_token = paramsThis.get("code");
+            (async function () {
+              await tokenRefreshPKCE(refresh_token, strAppId);
+            })();
+            window.sessionStorage.removeItem("auth_mode");
+          }
+        }
+          break;
+        case "Implicit Access": {
+          if (paramsThisFragment.get("access_token")) {
+            // Implicit flow redirect callback - access token
+            alert("Implicit flow redirect callback - access token");
+            strAccessToken = paramsThisFragment.get("access_token");
+            window.sessionStorage.removeItem("auth_mode");
+          }
+        }
+          break;
+        case "Implicit Refresh": {
+          if (paramsThisFragment.get("access_token")) {
+            // Implicit flow redirect callback - access token
+            alert("Implicit flow redirect callback - access token");
+            strAccessToken = paramsThisFragment.get("access_token");
+            window.sessionStorage.removeItem("auth_mode");
+          }
+        }
+          break;
+        default: {
+          console.error("Invalid Authorization mode.");
+        }
+      };
     }
-    const fragment = urlThis.hash.substring(1);
-    const paramsThisFragment = new self.URLSearchParams(fragment);
-    let strToken = "";
-    if (paramsThisFragment.get("access_token")) {
-      // Implicit flow redirect callback - access token
-      alert("Implicit flow redirect callback - access token");
-      strToken = paramsThisFragment.get("access_token");
-    }
-    
-    const btnSetToken = document.createElement("button");
-    btnSetToken.innerHTML = "Set Token";
-    btnSetToken.addEventListener("click", function (evt) {
-      while (!strToken) {
-        strToken = window.prompt("Enter the access token: ");
+
+    const pAccessToken = document.createElement("p");
+    const btnSetAccessToken = document.createElement("button");
+    btnSetAccessToken.innerHTML = "Set Token";
+    btnSetAccessToken.addEventListener("click", function (evt) {
+      while (!strAccessToken) {
+        strAccessToken = window.prompt("Enter the access token: ");
       }
     });
-    document.body.appendChild(btnSetToken);
-
+    pAccessToken.appendChild(btnSetAccessToken);
+    const btnGetImplicitAccessToken = document.createElement("button");
+    btnGetImplicitAccessToken.innerHTML = "Get Implicit Access Token";
+    btnGetImplicitAccessToken.addEventListener("click", function (evt) {
+      (async function () {
+        const params = new URLSearchParams([
+          [ "client_id", strAppId ],
+          [ "redirect_uri", urlRedirect ],
+          [ "response_type", "token" ],
+        ]);
+        const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
+        window.sessionStorage.setItem("auth_mode", "Implicit Access");
+        window.location = urlAuthorize;
+      })();
+    });
+    pAccessToken.appendChild(btnGetImplicitAccessToken);
     const btnGetPKCEAccessToken = document.createElement("button");
     btnGetPKCEAccessToken.innerHTML = "Get PKCE Access Token";
     btnGetPKCEAccessToken.addEventListener("click", function (evt) {
@@ -108,11 +162,41 @@ function start([ evtWindow ]) {
           [ "code_challenge_method", "S256" ],
         ]);
         const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
+        window.sessionStorage.setItem("auth_mode", "PKCE Access");
         window.location = urlAuthorize;
       })();
     });
-    document.body.appendChild(btnGetPKCEAccessToken);
+    pAccessToken.appendChild(btnGetPKCEAccessToken);
+    const spanAccessToken = document.createElement("span");
+    spanAccessToken.append(strAccessToken);
+    pAccessToken.appendChild(spanAccessToken);
+    document.body.appendChild(pAccessToken);
 
+    const pRefreshToken = document.createElement("p");
+    const btnSetRefreshToken = document.createElement("button");
+    btnSetRefreshToken.innerHTML = "Set Token";
+    btnSetRefreshToken.addEventListener("click", function (evt) {
+      while (!strRefreshToken) {
+        strRefreshToken = window.prompt("Enter the refresh token: ");
+      }
+    });
+    pRefreshToken.appendChild(btnSetRefreshToken);
+    const btnGetImplicitRefreshToken = document.createElement("button");
+    btnGetImplicitRefreshToken.innerHTML = "Get Implicit Refresh Token";
+    btnGetImplicitRefreshToken.addEventListener("click", function (evt) {
+      (async function () {
+        const params = new URLSearchParams([
+          [ "client_id", strAppId ],
+          [ "redirect_uri", urlRedirect ],
+          [ "token_access_type", "offline" ],
+          [ "response_type", "token" ],
+        ]);
+        const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
+        window.sessionStorage.setItem("auth_mode", "Implicit Refresh");
+        window.location = urlAuthorize;
+      })();
+    });
+    pRefreshToken.appendChild(btnGetImplicitRefreshToken);
     const btnGetPKCERefreshToken = document.createElement("button");
     btnGetPKCERefreshToken.innerHTML = "Get PKCE Refresh Token";
     btnGetPKCERefreshToken.addEventListener("click", function (evt) {
@@ -130,41 +214,12 @@ function start([ evtWindow ]) {
           [ "code_challenge_method", "S256" ],
         ]);
         const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
+        window.sessionStorage.setItem("auth_mode", "PKCE Refresh");
         window.location = urlAuthorize;
       })();
     });
-    document.body.appendChild(btnGetPKCERefreshToken);
-
-    const btnGetImplicitAccessToken = document.createElement("button");
-    btnGetImplicitAccessToken.innerHTML = "Get Implicit Access Token";
-    btnGetImplicitAccessToken.addEventListener("click", function (evt) {
-      (async function () {
-        const params = new URLSearchParams([
-          [ "client_id", strAppId ],
-          [ "redirect_uri", urlRedirect ],
-          [ "response_type", "token" ],
-        ]);
-        const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
-        window.location = urlAuthorize;
-      })();
-    });
-    document.body.appendChild(btnGetImplicitAccessToken);
-
-    const btnGetImplicitRefreshToken = document.createElement("button");
-    btnGetImplicitRefreshToken.innerHTML = "Get Implicit Refresh Token";
-    btnGetImplicitRefreshToken.addEventListener("click", function (evt) {
-      (async function () {
-        const params = new URLSearchParams([
-          [ "client_id", strAppId ],
-          [ "redirect_uri", urlRedirect ],
-          [ "token_access_type", "offline" ],
-          [ "response_type", "token" ],
-        ]);
-        const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
-        window.location = urlAuthorize;
-      })();
-    });
-    document.body.appendChild(btnGetImplicitRefreshToken);
+    pRefreshToken.appendChild(btnGetPKCERefreshToken);
+    document.body.appendChild(pRefreshToken);
 
     const btnListFolder = document.createElement("button");
     btnListFolder.innerHTML = "List Folder";
@@ -227,14 +282,12 @@ function start([ evtWindow ]) {
       const resp = await fetch(req);
       const jsonRespBody = await resp.text();
       const objResp = JSON.parse(jsonRespBody);
-      strToken = objResp["access_token"];
+      strAccessToken = objResp["access_token"];
     }
-    async function tokenRefreshPKCE(authorization_code, redirect_uri, verification_code, app_key) {
+    async function tokenRefreshPKCE(refresh_token, app_key) {
       const params = new self.URLSearchParams([
-        ["code", authorization_code ],
-        ["grant_type", "authorization_code" ],
-        ["redirect_uri", redirect_uri ],
-        ["code_verifier", verification_code ],
+        ["grant_type", "refresh_token" ],
+        ["refresh_token", verification_code ],
         ["client_id", app_key ],
       ]);
       const blobBody = new self.Blob([ params.toString() ], {type: "application/x-www-form-urlencoded" });
@@ -242,7 +295,8 @@ function start([ evtWindow ]) {
       const resp = await fetch(req);
       const jsonRespBody = await resp.text();
       const objResp = JSON.parse(jsonRespBody);
-      strToken = objResp["access_token"];
+      console.log(objResp);
+      strRefreshToken = objResp["access_token"];
     }
     async function list_folder() {
       const objReqBody = {
@@ -256,7 +310,7 @@ function start([ evtWindow ]) {
       };
       const jsonReqBody = JSON.stringify(objReqBody);
       const blobReqBody = new Blob([ jsonReqBody ], { type: "application/json" });
-      const headers = [ [ "Authorization", "Bearer " + strToken ] ];
+      const headers = [ [ "Authorization", "Bearer " + strAccessToken ] ];
       const reqFileList = createRequestPOST("https://api.dropboxapi.com/2/files/list_folder", blobReqBody, headers);
       const respFileList = await fetch(reqFileList);
       if (respFileList.status === 200) {
@@ -270,7 +324,7 @@ function start([ evtWindow ]) {
         path: path,
       };
       const jsonReqArg = JSON.stringify(objReqArg);
-      const headers = [ [ "Authorization", "Bearer " + strToken ], [ "Dropbox-API-Arg",  jsonReqArg ] ];
+      const headers = [ [ "Authorization", "Bearer " + strAccessToken ], [ "Dropbox-API-Arg",  jsonReqArg ] ];
       const reqDownload = createRequestPOST("https://content.dropboxapi.com/2/files/download", null, headers);
       const respDownload = await fetch(reqDownload);
       if (respDownload.status === 200) {
@@ -282,7 +336,7 @@ function start([ evtWindow ]) {
       }
     }
     async function revokeToken() {
-      const headers = [ [ "Authorization", "Bearer " + strToken ] ];
+      const headers = [ [ "Authorization", "Bearer " + strAccessToken ] ];
       const reqRevokeToken = createRequestPOST("https://api.dropboxapi.com/2/auth/token/revoke", null, headers);
       const respRevokeToken = await fetch(reqRevokeToken);
       console.log(respRevokeToken);
