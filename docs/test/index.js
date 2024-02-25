@@ -106,10 +106,10 @@ function start([ evtWindow, OAuth2 ]) {
     pAccessToken.appendChild(btnGetPKCEAccessToken);
     const spanAccessToken = document.createElement("span");
     spanAccessToken.append(OAuth2.getAccessToken());
-    OAuth2.callbackAccessToken = function (strToken) {
+    OAuth2.setCallbackAccessToken(function (strToken) {
       spanAccessToken.innerHTML = "";
       spanAccessToken.append(strToken);
-    }
+    });
     pAccessToken.appendChild(spanAccessToken);
     document.body.appendChild(pAccessToken);
 
@@ -139,10 +139,10 @@ function start([ evtWindow, OAuth2 ]) {
     pRefreshToken.appendChild(btnCreateAccessToken);
     const spanRefreshToken = document.createElement("span");
     spanRefreshToken.append(OAuth2.getRefreshToken());
-    OAuth2.callbackRefreshToken = function (strToken) {
+    OAuth2.setCallbackRefreshToken(function (strToken) {
       spanRefreshToken.innerHTML = "";
       spanRefreshToken.append(strToken);
-    }
+    });
     pRefreshToken.appendChild(spanRefreshToken);
     document.body.appendChild(pRefreshToken);
 
