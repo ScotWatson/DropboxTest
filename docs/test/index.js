@@ -164,10 +164,10 @@ function start([ evtWindow ]) {
       return ret;
     }
     function base64UrlEncode(strRaw) {
-      return btoa(strRaw).replace("+", "-").replace("/", "_");
+      return btoa(strRaw).replaceAll("+", "-").replaceAll("/", "_");
     }
     function base64UrlDecode(strBase64URL) {
-      const strBase64 = strBase64URL.replace("-", "+").replace("_", "/");
+      const strBase64 = strBase64URL.replaceAll("-", "+").replaceAll("_", "/");
       return atob(strBase64);
     }
     async function tokenPKCE(authorization_code, redirect_uri, verification_code, app_key) {
