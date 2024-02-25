@@ -63,7 +63,7 @@ let urlTokenEndpoint;
 const urlRedirectEndpoint = new self.URL(urlThis.origin + urlThis.pathname);
 
 export function initialize(args) {
-  { strClientId, urlAuthorizationEndpoint, urlTokenEndpoint} = args;
+  ({ strClientId, urlAuthorizationEndpoint, urlTokenEndpoint } = args);
 }
 
 let strAccessToken = "";
