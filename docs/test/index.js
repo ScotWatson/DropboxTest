@@ -96,6 +96,7 @@ if (auth_mode) {
         })();
         window.sessionStorage.removeItem("auth_mode");
         window.sessionStorage.removeItem("code_verifier");
+        window.history.replaceState(null, "", urlRedirect);
       }
     }
       break;
@@ -112,6 +113,7 @@ if (auth_mode) {
         })();
         window.sessionStorage.removeItem("auth_mode");
         window.sessionStorage.removeItem("code_verifier");
+        window.history.replaceState(null, "", urlRedirect);
       }
     }
       break;
@@ -122,6 +124,7 @@ if (auth_mode) {
         alert("Implicit flow redirect callback - access token");
         setAccessToken(paramsThisFragment.get("access_token"));
         window.sessionStorage.removeItem("auth_mode");
+        window.history.replaceState(null, "", urlRedirect);
       }
     }
       break;
