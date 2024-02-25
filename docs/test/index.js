@@ -69,29 +69,12 @@ const urlThis = new self.URL(window.location);
 const paramsThis = urlThis.searchParams;
 const strThisFragment = urlThis.hash.substring(1);
 
-let spanAccessToken = null;
-let spanRefreshToken = null;
-function callbackAccessToken(strToken) {
-  if (spanAccessToken !== null) {
-    spanAccessToken.innerHTML = "";
-    spanAccessToken.append(strAccessToken);
-  }
-}
-function callbackRefreshToken(strToken) {
-  if (spanRefreshToken !== null) {
-    spanRefreshToken.innerHTML = "";
-    spanRefreshToken.append(strRefreshToken);
-  }
-}
-
 function start([ evtWindow, OAuth2 ]) {
   try {
     const btnRevokeTokens = document.createElement("button");
     btnRevokeTokens.innerHTML = "Revoke Tokens";
     btnRevokeTokens.addEventListener("click", function (evt) {
-      OAuth2.revokeToken(strAccessToken);
-      OAuth2.setAccessToken("");
-      OAuth2.setRefreshToken("");
+      OAuth2.revokeToken(OAuth2.getAccessToken());
     });
     document.body.appendChild(btnRevokeTokens);
     const pAccessToken = document.createElement("p");
@@ -116,8 +99,12 @@ function start([ evtWindow, OAuth2 ]) {
       OAuth2.getPKCEAccessToken();
     });
     pAccessToken.appendChild(btnGetPKCEAccessToken);
-    spanAccessToken = document.createElement("span");
-    spanAccessToken.append(strAccessToken);
+    const spanAccessToken = document.createElement("span");
+    spanAccessToken.append(OAuth2.getAccessToken);
+    OAuth2.callbackAccessToken = function (strToken) {
+      spanAccessToken.innerHTML = "";
+      spanAccessToken.append(strToken);
+    }
     pAccessToken.appendChild(spanAccessToken);
     document.body.appendChild(pAccessToken);
 
@@ -145,8 +132,12 @@ function start([ evtWindow, OAuth2 ]) {
       })();
     });
     pRefreshToken.appendChild(btnCreateAccessToken);
-    spanRefreshToken = document.createElement("span");
+    const spanRefreshToken = document.createElement("span");
     spanRefreshToken.append(strRefreshToken);
+    OAuth2.callbackRefreshToken = function (strToken) {
+      spanRefreshToken.innerHTML = "";
+      spanRefreshToken.append(strToken);
+    }
     pRefreshToken.appendChild(spanRefreshToken);
     document.body.appendChild(pRefreshToken);
 
