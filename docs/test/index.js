@@ -181,11 +181,11 @@ function start([ evtWindow ]) {
       const blobBody = new self.Blob([ params.toString() ], {type: "application/x-www-form-urlencoded" });
       const req = createRequestPOST("https://api.dropboxapi.com/oauth2/token", blobBody);
       const resp = await fetch(req);
-      const strRespBody = await resp.text();
-      console.log(strRespBody);
-      const paramsResp = new self.URLSearchParams(strRespBody);
-      console.log(paramsResp);
-      strToken = paramsResp.get("access_token");
+      const jsonRespBody = await resp.text();
+      console.log(jsonRespBody);
+      const objResp = JSON.parse(jsonRespBody);
+      console.log(objResp);
+      strToken = objResp["access_token"];
       console.log(strToken);
     }
     async function list_folder() {
