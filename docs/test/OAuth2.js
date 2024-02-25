@@ -268,11 +268,11 @@ export async function getPKCERefreshToken() {
   window.sessionStorage.setItem("auth_mode", "PKCE Refresh");
   window.location = urlAuthorize;
 }
-export let urlRevokeEndpoint;
-function setRevokeEndpoint(urlNewRevokeEndpoint) {
+let urlRevokeEndpoint;
+export function setRevokeEndpoint(urlNewRevokeEndpoint) {
   urlRevokeEndpoint = urlNewRevokeEndpoint;
 }
-function getRevokeEndpoint() {
+export function getRevokeEndpoint() {
   return urlRevokeEndpoint;
 }
 export async function revokeToken(strToken) {
