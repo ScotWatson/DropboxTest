@@ -182,8 +182,11 @@ function start([ evtWindow ]) {
       const req = createRequestPOST("https://api.dropboxapi.com/oauth2/token", blobBody);
       const resp = await fetch(req);
       const strRespBody = await resp.text();
+      console.log(strRespBody);
       const paramsResp = new self.URLSearchParams(strRespBody);
+      console.log(paramsResp);
       strToken = paramsResp.get("access_token");
+      console.log(strToken);
     }
     async function list_folder() {
       const objReqBody = {
