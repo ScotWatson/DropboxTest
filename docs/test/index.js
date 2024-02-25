@@ -66,7 +66,7 @@ function start([ evtWindow ]) {
       const authorization_code = paramsThis.get("code");
       const code_verifier = window.sessionStorage.getItem("code_verifier");
       (async function () {
-        await tokenPKCE(authorization_code, urlThis.toString(), code_verifier, "m1po2j6iw2k75n4");
+        await tokenPKCE(authorization_code, urlThis.origin + urlThis.pathname, code_verifier, "m1po2j6iw2k75n4");
       })();
     }
     const fragment = urlThis.hash.substring(1);
@@ -93,7 +93,7 @@ function start([ evtWindow ]) {
         alert("code_verifier: " + code_verifier + " code_challenge: " + code_challenge);
         const params = new URLSearchParams([
           [ "client_id", "m1po2j6iw2k75n4" ],
-          [ "redirect_uri", urlThis.toString() ],
+          [ "redirect_uri", urlThis.origin + urlThis.pathname ],
           [ "response_type", "code" ],
           [ "code_challenge", code_challenge ],
           [ "code_challenge_method", "S256" ],
@@ -110,7 +110,7 @@ function start([ evtWindow ]) {
       (async function () {
         const params = new URLSearchParams([
           [ "client_id", "m1po2j6iw2k75n4" ],
-          [ "redirect_uri", urlThis.toString() ],
+          [ "redirect_uri", urlThis.origin + urlThis.pathname ],
           [ "response_type", "token" ],
         ]);
         const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
