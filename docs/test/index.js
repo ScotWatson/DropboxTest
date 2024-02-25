@@ -105,16 +105,7 @@ if (auth_mode) {
       }
     }
       break;
-    case "Implicit Refresh": {
-      const paramsThisFragment = new self.URLSearchParams(strThisFragment);
-      if (paramsThisFragment.get("access_token")) {
-        // Implicit flow redirect callback - refresh token
-        alert("Implicit flow redirect callback - refresh token");
-        strRefreshToken = paramsThisFragment.get("access_token");
-        window.sessionStorage.removeItem("auth_mode");
-      }
-    }
-      break;
+    // Implicit flow redirect callback - refresh token - NOT POSSIBLE
     default: {
       console.error("Invalid Authorization mode.");
     }
@@ -253,22 +244,6 @@ function start([ evtWindow ]) {
       }
     });
     pRefreshToken.appendChild(btnSetRefreshToken);
-    const btnGetImplicitRefreshToken = document.createElement("button");
-    btnGetImplicitRefreshToken.innerHTML = "Get Implicit Refresh Token";
-    btnGetImplicitRefreshToken.addEventListener("click", function (evt) {
-      (async function () {
-        const params = new URLSearchParams([
-          [ "client_id", strAppId ],
-          [ "redirect_uri", urlRedirect ],
-          [ "token_access_type", "offline" ],
-          [ "response_type", "token" ],
-        ]);
-        const urlAuthorize = new URL("https://www.dropbox.com/oauth2/authorize?" + params);
-        window.sessionStorage.setItem("auth_mode", "Implicit Refresh");
-        window.location = urlAuthorize;
-      })();
-    });
-    pRefreshToken.appendChild(btnGetImplicitRefreshToken);
     const btnGetPKCERefreshToken = document.createElement("button");
     btnGetPKCERefreshToken.innerHTML = "Get PKCE Refresh Token";
     btnGetPKCERefreshToken.addEventListener("click", function (evt) {
