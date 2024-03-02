@@ -132,15 +132,20 @@ export class TokenManagement {
     const resp = await fetch(req);
     const jsonRespBody = await resp.text();
     const objResp = JSON.parse(jsonRespBody);
+    console.log(objResp);
     if (objResp["refresh_token"]) {
       this.setTokens({
         accessToken: objResp["access_token"],
         refreshToken: objResp["refresh_token"],
+        tokenType: objResp["token_type"],
+        expiryDate: new Date(Date.now() + objResp["expires_in"] * 1000),
       });
     } else {
       this.setTokens({
         accessToken: objResp["access_token"],
-        refreshToken: "",
+        refreshToken: this.#refreshToken,
+        tokenType: objResp["token_type"],
+        expiryDate: new Date(Date.now() + objResp["expires_in"] * 1000),
       });
     }
   }
