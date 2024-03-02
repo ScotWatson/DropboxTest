@@ -66,15 +66,24 @@ const strThisFragment = urlThis.hash.substring(1);
 
 function start([ evtWindow, OAuth2 ]) {
   try {
-    console.log(OAuth2);
     const dropboxAuthorizationEndpoint = new self.URL("https://www.dropbox.com/oauth2/authorize");
     const dropboxTokenEndpoint = new self.URL("https://api.dropboxapi.com/oauth2/token");
-    const dropboxRevokeEndpoint = new self.URL("https://api.dropboxapi.com/2/auth/token/revoke");
-    
     const dropboxTokenManagement = new OAuth2.TokenManagement({
       clientId: "m1po2j6iw2k75n4",
       tokenEndpoint: dropboxTokenEndpoint,
     });
+    async revokeDropboxTokens() {
+      const revokeEndpoint = new self.URL("https://api.dropboxapi.com/2/auth/token/revoke");
+      const req = createRequestPOST(revokeEndpoint, null, []);
+      const resp = await dropboxTokenManagement.fetch(req);
+      console.log(resp);
+      if (resp.status === 200) {
+        console.log("Tokens Revoked");
+        dropboxTokenManagement.setTokens({});
+      } else {
+        console.log("Tokens Not Revoked");
+      }
+    }
     OAuth2.receivedTokens().then(function (tokens) {
       if (tokens.tokenEndpoint === dropboxTokenEndpoint) {
         dropboxTokenManagement.setTokens(tokens);
@@ -83,10 +92,7 @@ function start([ evtWindow, OAuth2 ]) {
     const btnRevokeTokens = document.createElement("button");
     btnRevokeTokens.innerHTML = "Revoke Tokens";
     btnRevokeTokens.addEventListener("click", function (evt) {
-      dropboxTokenManagement.revokeTokens({
-        endpoint: dropboxRevokeEndpoint,
-        OAuth2.setTokens({});
-      });
+      revokeDropboxTokens();
     });
     document.body.appendChild(btnRevokeTokens);
     const pAccessToken = document.createElement("p");
@@ -95,10 +101,11 @@ function start([ evtWindow, OAuth2 ]) {
     btnSetAccessToken.addEventListener("click", function (evt) {
       newAccessToken = window.prompt("Enter the access token: ");
       if (newAccessToken) {
-        OAuth2.setTokens({
+        dropboxTokenManagement.setTokens({
           accessToken: newAccessToken,
-          tokenType: "Bearer",
-          expiryDate: new Date(Date.now + 14400*1000),
+          refreshToken: dropboxTokenManagement.getRefreshToken(),
+          tokenType: dropboxTokenManagement.getTokenType(),
+          expiryDate: new Date(Date.now + 14400 * 1000),
         });
       }
     });
@@ -123,7 +130,7 @@ function start([ evtWindow, OAuth2 ]) {
     });
     pAccessToken.appendChild(btnGetPKCEAccessToken);
     const spanAccessToken = document.createElement("span");
-    spanAccessToken.append(OAuth2.getAccessToken());
+    spanAccessToken.append(dropboxTokenManagement.getAccessToken());
     dropboxTokenManagement.setCallbackAccessToken(function (strToken) {
       spanAccessToken.innerHTML = "";
       spanAccessToken.append(strToken);
@@ -137,8 +144,11 @@ function start([ evtWindow, OAuth2 ]) {
     btnSetRefreshToken.addEventListener("click", function (evt) {
       newRefreshToken = window.prompt("Enter the refresh token: ");
       if (newRefreshToken) {
-        OAuth2.setRefreshToken({
+        dropboxTokenManagement.setRefreshToken({
+          accessToken: dropboxTokenManagement.getAccessToken(),
           refreshToken: newRefreshToken,
+          tokenType: dropboxTokenManagement.getTokenType(),
+          expiryDate: dropboxTokenManagement.getExpiryDate(),
         });
       }
     });
