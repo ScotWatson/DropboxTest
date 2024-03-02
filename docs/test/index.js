@@ -114,18 +114,16 @@ function start([ evtWindow, OAuth2 ]) {
     btnGetImplicitAccessToken.innerHTML = "Get Implicit Access Token";
     btnGetImplicitAccessToken.addEventListener("click", function (evt) {
       console.log(OAuth2.url);
-      OAuth2.retrieveTokenImplicitAccess({
+      dropboxTokenManagement.retrieveTokenImplicitAccess({
         authorizationEndpoint: dropboxAuthorizationEndpoint,
-        tokenEndpoint: dropboxTokenEndpoint,
       });
     });
     pAccessToken.appendChild(btnGetImplicitAccessToken);
     const btnGetPKCEAccessToken = document.createElement("button");
     btnGetPKCEAccessToken.innerHTML = "Get PKCE Access Token";
     btnGetPKCEAccessToken.addEventListener("click", function (evt) {
-      OAuth2.retrieveTokenPKCEAccess({
+      dropboxTokenManagement.retrieveTokenPKCEAccess({
         authorizationEndpoint: dropboxAuthorizationEndpoint,
-        tokenEndpoint: dropboxTokenEndpoint,
       });
     });
     pAccessToken.appendChild(btnGetPKCEAccessToken);
@@ -156,9 +154,8 @@ function start([ evtWindow, OAuth2 ]) {
     const btnGetPKCERefreshToken = document.createElement("button");
     btnGetPKCERefreshToken.innerHTML = "Get PKCE Refresh Token";
     btnGetPKCERefreshToken.addEventListener("click", function (evt) {
-      OAuth2.retrieveTokenPKCERefresh({
+      dropboxTokenManagement.retrieveTokenPKCERefresh({
         authorizationEndpoint: dropboxAuthorizationEndpoint,
-        tokenEndpoint: dropboxTokenEndpoint,
       });
     });
     pRefreshToken.appendChild(btnGetPKCERefreshToken);
