@@ -151,7 +151,7 @@ export class TokenManagement {
       await this.refreshAccessTokenPKCE();
     }
     let req = request.clone();
-    req.headers.append([ "Authorization", this.#tokenType + " " + this.#accessToken ]);
+    req.headers.append("Authorization", this.#tokenType + " " + this.#accessToken);
     const resp = await fetch(req);
     return resp;
   }
