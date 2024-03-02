@@ -60,15 +60,16 @@ function createRequestPOST(endpoint, body, headers) {
   });
 }
 
-const urlThis = new self.URL(window.location);
-const paramsThis = urlThis.searchParams;
-const strThisFragment = urlThis.hash.substring(1);
+const selfURL = new self.URL(window.location);
+const selfURLParams = urlThis.searchParams;
+const selfURLFragment = urlThis.hash.substring(1);
 
 function start([ evtWindow, OAuth2 ]) {
   try {
+    const fragmentParams = new URLSearchParams(selfURLFragment);
+    const dropboxClientId = fragmentParams.get("appId");
     const dropboxAuthorizationEndpoint = new self.URL("https://www.dropbox.com/oauth2/authorize");
     const dropboxTokenEndpoint = new self.URL("https://api.dropboxapi.com/oauth2/token");
-    const dropboxClientId = "m1po2j6iw2k75n4";
     const dropboxTokenManagement = new OAuth2.TokenManagement({
       clientId: dropboxClientId,
       tokenEndpoint: dropboxTokenEndpoint,
