@@ -235,14 +235,15 @@ export class TokenManagement {
 }
 
 const jsonOAuth2 = window.sessionStorage.getItem("OAuth2");
+console.log(jsonOAuth2);
 const objOAuth2 = (jsonOAuth2 === null) ? null : JSON.parse(jsonOAuth2);
+console.log(objOAuth2);
 //window.sessionStorage.removeItem("OAuth2");
 export function isRedirect() {
   return !(objOAuth2 === null);
 }
 
 export const receivedTokens = new Promise(function (resolve, reject) {
-  console.log(objOAuth2);
   if (isRedirect()) {
     switch (objOAuth2.grantType) {
       case "PKCE Access": {
