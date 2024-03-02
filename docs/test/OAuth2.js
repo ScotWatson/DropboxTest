@@ -241,7 +241,7 @@ export function isRedirect() {
 }
 
 export const receivedTokens = new Promise(function (resolve, reject) {
-  console.log(objOAuth2);
+  console.log(JSON.stringify(objOAuth2));
   if (isRedirect()) {
     switch (objOAuth2.grantType) {
       case "PKCE Access": {
