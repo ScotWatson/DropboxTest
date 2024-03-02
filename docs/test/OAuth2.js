@@ -71,7 +71,7 @@ function coerseToString(args) {
 // The "Authorization Endpoint" per Section 3 of RFC6749. Section 3.1 of RFC6749 provides details.
 // The "Token Endpoint" per Section 3 of RFC6749. Section 3.2 of RFC6749 provides details.
 
-export async retrieveTokenPKCEAccess(args) {
+export async function retrieveTokenPKCEAccess(args) {
   const { authorizationEndpoint, tokenEndpoint } = args;
   const strAuthorizationEndpoint = coerseToString(authorizationEndpoint);
   const strTokenEndpoint = coerseToString(tokenEndpoint);
@@ -98,7 +98,7 @@ export async retrieveTokenPKCEAccess(args) {
   window.location = authorizeURL;
   // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
 }
-export async retrieveTokenPKCERefresh(args) {
+export async function retrieveTokenPKCERefresh(args) {
   const { authorizationEndpoint, tokenEndpoint } = args;
   const strAuthorizationEndpoint = coerseToString(authorizationEndpoint);
   const strTokenEndpoint = coerseToString(tokenEndpoint);
@@ -126,7 +126,7 @@ export async retrieveTokenPKCERefresh(args) {
   window.location = authorizeURL;
   // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
 }
-export async retrieveTokenImplicitAccess(args) {
+export async function retrieveTokenImplicitAccess(args) {
   const { authorizationEndpoint, tokenEndpoint } = args;
   const strAuthorizationEndpoint = coerseToString(authorizationEndpoint);
   const strTokenEndpoint = coerseToString(tokenEndpoint);
