@@ -98,7 +98,7 @@ function start([ evtWindow, OAuth2 ]) {
       btnRevokeTokens.addEventListener("click", function (evt) {
         revokeDropboxTokens();
       });
-      document.body.appendChild(btnRevokeTokens);
+      div.appendChild(btnRevokeTokens);
       const pAccessToken = document.createElement("p");
       const btnSetAccessToken = document.createElement("button");
       btnSetAccessToken.innerHTML = "Set Access Token";
