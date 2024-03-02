@@ -64,88 +64,6 @@ function coerseToString(args) {
     throw "Failed to coerse to string";
   }
 }
-// Each of the "retrieveToken" functions below performs redirection to obtain tokens.  This function will cause the page to refresh.
-// These functions each require:
-//   "Authorization Endpoint"
-//   "Token Endpoint"
-// The "Authorization Endpoint" per Section 3 of RFC6749. Section 3.1 of RFC6749 provides details.
-// The "Token Endpoint" per Section 3 of RFC6749. Section 3.2 of RFC6749 provides details.
-
-export async function retrieveTokenPKCEAccess(args) {
-  const { authorizationEndpoint, tokenEndpoint } = args;
-  const strAuthorizationEndpoint = coerseToString(authorizationEndpoint);
-  const strTokenEndpoint = coerseToString(tokenEndpoint);
-  // Step (A) of Section 1.1 of RFC7636
-  const nonce = base64UrlEncode(strRaw32Random()).slice(0, -1);
-  const codeVerifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
-  const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(codeVerifier));
-  const codeChallenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
-  const params = new URLSearchParams([
-    [ "client_id", this.#clientId ],
-    [ "redirect_uri", redirectEndpoint ],
-    [ "response_type", "code" ],
-    [ "code_challenge", codeChallenge ],
-    [ "code_challenge_method", "S256" ],
-    [ "state", nonce ],
-  ]);
-  const authorizeURL = new URL(strAuthorizationEndpoint + "?" + params);
-  window.sessionStorage.setItem("OAuth2", {
-    grantType: "PKCE Access",
-    codeVerifier: codeVerifier,
-    tokenEndpoint: strTokenEndpoint,
-    state: nonce,
-  });
-  window.location = authorizeURL;
-  // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
-}
-export async function retrieveTokenPKCERefresh(args) {
-  const { authorizationEndpoint, tokenEndpoint } = args;
-  const strAuthorizationEndpoint = coerseToString(authorizationEndpoint);
-  const strTokenEndpoint = coerseToString(tokenEndpoint);
-  // Step (A) of Section 1.1 of RFC7636
-  const nonce = base64UrlEncode(strRaw32Random()).slice(0, -1);
-  const codeVerifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
-  const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(codeVerifier));
-  const codeChallenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
-  const params = new URLSearchParams([
-    [ "client_id", this.#clientId ],
-    [ "redirect_uri", redirectEndpoint ],
-    [ "token_access_type", "offline" ],
-    [ "response_type", "code" ],
-    [ "code_challenge", code_challenge ],
-    [ "code_challenge_method", "S256" ],
-    [ "state", nonce ],
-  ]);
-  const authorizeURL = new URL(strAuthorizationEndpoint + "?" + params);
-  window.sessionStorage.setItem("OAuth2", {
-    grantType: "PKCE Refresh",
-    codeVerifier: codeVerifier,
-    tokenEndpoint: strTokenEndpoint,
-    state: nonce,
-  });
-  window.location = authorizeURL;
-  // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
-}
-export async function retrieveTokenImplicitAccess(args) {
-  const { authorizationEndpoint, tokenEndpoint } = args;
-  const strAuthorizationEndpoint = coerseToString(authorizationEndpoint);
-  const strTokenEndpoint = coerseToString(tokenEndpoint);
-  // 
-  const nonce = base64UrlEncode(strRaw32Random()).slice(0, -1);
-  const params = new self.URLSearchParams([
-    [ "client_id", this.#clientId ],
-    [ "redirect_uri", redirectEndpoint ],
-    [ "response_type", "token" ],
-    [ "state", nonce ],
-  ]);
-  const authorizeURL = new self.URL(strAuthorizationEndpoint + "?" + params);
-  window.sessionStorage.setItem("OAuth2", {
-    grantType: "Implicit Grant",
-    tokenEndpoint: strTokenEndpoint,
-    state: nonce,
-  });
-  window.location = authorizeURL;
-}
 
 export class TokenManagement {
   // Below is the "Client Identifier" referred to in Section 2.2 of RFC6749. This is also referred to by some as the "App Id".
@@ -235,6 +153,81 @@ export class TokenManagement {
     req.headers.add([ "Authorization", this.#tokenType + " " + this.#accessToken ]);
     const resp = await fetch(req);
     return resp;
+  }
+  // Each of the "retrieveToken" functions below performs redirection to obtain tokens.  This function will cause the page to refresh.
+  // These functions each require "Authorization Endpoint"
+  // The "Authorization Endpoint" per Section 3 of RFC6749. Section 3.1 of RFC6749 provides details.
+  async retrieveTokenPKCEAccess(args) {
+    const { authorizationEndpoint } = args;
+    const strAuthorizationEndpoint = coerseToString(authorizationEndpoint);
+    // Step (A) of Section 1.1 of RFC7636
+    const nonce = base64UrlEncode(strRaw32Random()).slice(0, -1);
+    const codeVerifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
+    const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(codeVerifier));
+    const codeChallenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
+    const params = new URLSearchParams([
+      [ "client_id", this.#clientId ],
+      [ "redirect_uri", redirectEndpoint ],
+      [ "response_type", "code" ],
+      [ "code_challenge", codeChallenge ],
+      [ "code_challenge_method", "S256" ],
+      [ "state", nonce ],
+    ]);
+    const authorizeURL = new URL(strAuthorizationEndpoint + "?" + params);
+    window.sessionStorage.setItem("OAuth2", {
+      grantType: "PKCE Access",
+      codeVerifier: codeVerifier,
+      tokenEndpoint: this.#tokenEndpoint,
+      state: nonce,
+    });
+    window.location = authorizeURL;
+    // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
+  }
+  async retrieveTokenPKCERefresh(args) {
+    const { authorizationEndpoint } = args;
+    const strAuthorizationEndpoint = coerseToString(authorizationEndpoint);
+    // Step (A) of Section 1.1 of RFC7636
+    const nonce = base64UrlEncode(strRaw32Random()).slice(0, -1);
+    const codeVerifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
+    const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(codeVerifier));
+    const codeChallenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
+    const params = new URLSearchParams([
+      [ "client_id", this.#clientId ],
+      [ "redirect_uri", redirectEndpoint ],
+      [ "token_access_type", "offline" ],
+      [ "response_type", "code" ],
+      [ "code_challenge", code_challenge ],
+      [ "code_challenge_method", "S256" ],
+      [ "state", nonce ],
+    ]);
+    const authorizeURL = new URL(strAuthorizationEndpoint + "?" + params);
+    window.sessionStorage.setItem("OAuth2", {
+      grantType: "PKCE Refresh",
+      codeVerifier: codeVerifier,
+      tokenEndpoint: this.#tokenEndpoint,
+      state: nonce,
+    });
+    window.location = authorizeURL;
+    // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
+  }
+  async retrieveTokenImplicitAccess(args) {
+    const { authorizationEndpoint } = args;
+    const strAuthorizationEndpoint = coerseToString(authorizationEndpoint);
+    // 
+    const nonce = base64UrlEncode(strRaw32Random()).slice(0, -1);
+    const params = new self.URLSearchParams([
+      [ "client_id", this.#clientId ],
+      [ "redirect_uri", redirectEndpoint ],
+      [ "response_type", "token" ],
+      [ "state", nonce ],
+    ]);
+    const authorizeURL = new self.URL(strAuthorizationEndpoint + "?" + params);
+    window.sessionStorage.setItem("OAuth2", {
+      grantType: "Implicit Grant",
+      tokenEndpoint: this.#tokenEndpoint,
+      state: nonce,
+    });
+    window.location = authorizeURL;
   }
 }
 
