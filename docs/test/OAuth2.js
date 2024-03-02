@@ -176,9 +176,10 @@ export class TokenManagement {
     const authorizeURL = new URL(strAuthorizationEndpoint + "?" + params);
     window.sessionStorage.setItem("OAuth2", {
       grantType: "PKCE Access",
-      codeVerifier: codeVerifier,
+      client_id: this.#clientId,
       tokenEndpoint: this.#tokenEndpoint,
       state: nonce,
+      codeVerifier: codeVerifier,
     });
     window.location = authorizeURL;
     // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
@@ -203,9 +204,10 @@ export class TokenManagement {
     const authorizeURL = new URL(strAuthorizationEndpoint + "?" + params);
     window.sessionStorage.setItem("OAuth2", {
       grantType: "PKCE Refresh",
-      codeVerifier: codeVerifier,
+      client_id: this.#clientId,
       tokenEndpoint: this.#tokenEndpoint,
       state: nonce,
+      codeVerifier: codeVerifier,
     });
     window.location = authorizeURL;
     // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
@@ -224,6 +226,7 @@ export class TokenManagement {
     const authorizeURL = new self.URL(strAuthorizationEndpoint + "?" + params);
     window.sessionStorage.setItem("OAuth2", {
       grantType: "Implicit Grant",
+      client_id: this.#clientId,
       tokenEndpoint: this.#tokenEndpoint,
       state: nonce,
     });
@@ -272,7 +275,7 @@ async function redirectPKCEAccess() {
     throw "state parameter required";
   }
   const stateReceived = selfURLParams.get("state");
-  const { codeVerifier, tokenEndpoint, state } = objOAuth2;
+  const { clientId, tokenEndpoint, state, codeVerifier } = objOAuth2;
   if (stateReceived !== state) {
     throw "state does not match";
   }
@@ -282,7 +285,7 @@ async function redirectPKCEAccess() {
     ["grant_type", "authorization_code" ],
     ["redirect_uri", redirectEndpoint ],
     ["code_verifier", codeVerifier ],
-    ["client_id", this.#clientId ],
+    ["client_id", clientId ],
   ]);
   const reqBody = new self.Blob([ params.toString() ], { type: "application/x-www-form-urlencoded" });
   const req = createRequestPOST(tokenEndpoint, reqBody);
@@ -291,6 +294,7 @@ async function redirectPKCEAccess() {
   // Step (D) of Section 1.1 of RFC7636
   const objResp = JSON.parse(jsonRespBody);
   return {
+    client_id: clientId,
     tokenEndpoint: tokenEndpoint,
     accessToken: objResp["access_token"],
     tokenType: objResp["token_type"],
@@ -306,7 +310,7 @@ async function redirectPKCERefresh() {
     throw "state parameter required";
   }
   const stateReceived = selfURLParams.get("state");
-  const { codeVerifier, tokenEndpoint, state } = objOAuth2;
+  const { clientId, tokenEndpoint, state, codeVerifier } = objOAuth2;
   if (stateReceived !== state) {
     throw "state does not match";
   }
@@ -315,7 +319,7 @@ async function redirectPKCERefresh() {
     ["grant_type", "authorization_code" ],
     ["redirect_uri", redirectEndpoint ],
     ["code_verifier", codeVerifier ],
-    ["client_id", this.#clientId ],
+    ["client_id", clientId ],
   ]);
   const reqBody = new self.Blob([ params.toString() ], {type: "application/x-www-form-urlencoded" });
   const req = createRequestPOST(tokenEndpoint, reqBody);
@@ -323,6 +327,7 @@ async function redirectPKCERefresh() {
   const jsonRespBody = await resp.text();
   const objResp = JSON.parse(jsonRespBody);
   return {
+    client_id: clientId,
     tokenEndpoint: tokenEndpoint,
     accessToken: objResp["access_token"],
     refreshToken: objResp["refresh_token"],
@@ -331,12 +336,13 @@ async function redirectPKCERefresh() {
   };
 }
 async function redirectImplicitAccess() {
-  const { codeVerifier, tokenEndpoint } = objOAuth2;
+  const { clientId, tokenEndpoint } = objOAuth2;
   const selfURLParamsFragment = new self.URLSearchParams(selfURLFragment);
   if (!(selfURLParamsFragment.has("access_token"))) {
     throw "access_token parameter required";
   }
   return {
+    client_id: clientId,
     tokenEndpoint: tokenEndpoint,
     accessToken: selfURLParamsFragment.get("access_token"),
     tokenType: objResp["token_type"],
