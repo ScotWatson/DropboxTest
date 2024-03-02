@@ -67,11 +67,22 @@ const selfURLFragment = selfURL.hash.substring(1);
 function start([ evtWindow, OAuth2 ]) {
   try {
     const fragmentParams = new URLSearchParams(selfURLFragment);
-    const dropboxClientId = fragmentParams.get("appId");
+    let clientId = fragmentParams.get("appId");
+    const pClientId = document.createElement("p");
+    pClientId.append(clientId);
+    document.body.appendChild(pClientId);
+    function getClientId() {
+      if (clientId === null) {
+        clientId = window.prompt("Enter app ID:");
+        pClientId.innerHTML = "";
+        pClientId.append(clientId);
+      }
+      return clientId;
+    }
     const dropboxAuthorizationEndpoint = new self.URL("https://www.dropbox.com/oauth2/authorize");
     const dropboxTokenEndpoint = new self.URL("https://api.dropboxapi.com/oauth2/token");
     const dropboxTokenManagement = new OAuth2.TokenManagement({
-      clientId: dropboxClientId,
+      clientId: getClientId(),
       tokenEndpoint: dropboxTokenEndpoint,
     });
     async function revokeDropboxTokens() {
@@ -87,7 +98,9 @@ function start([ evtWindow, OAuth2 ]) {
       }
     }
     OAuth2.receivedTokens.then(function (tokens) {
-      if ((tokens.clientId === dropboxClientId) && (tokens.tokenEndpoint === dropboxTokenEndpoint.toString())) {
+      if (tokens.tokenEndpoint === dropboxTokenEndpoint.toString()) {
+        pClientId.innerHTML = "";
+        pClientId.append(clientId);
         dropboxTokenManagement.setTokens(tokens);
       }
     }).catch(function (error) {
