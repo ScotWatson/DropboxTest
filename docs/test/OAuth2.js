@@ -361,7 +361,7 @@ async function redirectImplicitAccess() {
     tokenEndpoint: tokenEndpoint,
     accessToken: selfURLParamsFragment.get("access_token"),
     tokenType: selfURLParamsFragment.get("token_type"),
-    expiryDate: new Date(Date.now() + 1000 * selfURLParamsFragment.get("expires_in"),
+    expiryDate: new Date(Date.now() + 1000 * selfURLParamsFragment.get("expires_in")),
   };
 }
 
