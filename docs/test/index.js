@@ -72,7 +72,7 @@ function start([ evtWindow, OAuth2 ]) {
       clientId: "m1po2j6iw2k75n4",
       tokenEndpoint: dropboxTokenEndpoint,
     });
-    async revokeDropboxTokens() {
+    async function revokeDropboxTokens() {
       const revokeEndpoint = new self.URL("https://api.dropboxapi.com/2/auth/token/revoke");
       const req = createRequestPOST(revokeEndpoint, null, []);
       const resp = await dropboxTokenManagement.fetch(req);
