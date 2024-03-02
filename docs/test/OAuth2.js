@@ -222,7 +222,7 @@ export class TokenManagement {
       });
     } else {
       this.setTokens({
-        accessToken: objResp["access_token"]),
+        accessToken: objResp["access_token"],
         refreshToken: "",
       });
     }
