@@ -68,8 +68,9 @@ function start([ evtWindow, OAuth2 ]) {
   try {
     const dropboxAuthorizationEndpoint = new self.URL("https://www.dropbox.com/oauth2/authorize");
     const dropboxTokenEndpoint = new self.URL("https://api.dropboxapi.com/oauth2/token");
+    const dropboxClientId = "m1po2j6iw2k75n4";
     const dropboxTokenManagement = new OAuth2.TokenManagement({
-      clientId: "m1po2j6iw2k75n4",
+      clientId: dropboxClientId,
       tokenEndpoint: dropboxTokenEndpoint,
     });
     async function revokeDropboxTokens() {
@@ -84,8 +85,8 @@ function start([ evtWindow, OAuth2 ]) {
         console.log("Tokens Not Revoked");
       }
     }
-    OAuth2.receivedTokens().then(function (tokens) {
-      if (tokens.tokenEndpoint === dropboxTokenEndpoint) {
+    OAuth2.receivedTokens.then(function (tokens) {
+      if ((tokens.clientId === dropboxClientId) && (tokens.tokenEndpoint === dropboxTokenEndpoint)) {
         dropboxTokenManagement.setTokens(tokens);
       }
     });
