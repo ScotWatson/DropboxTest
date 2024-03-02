@@ -103,6 +103,7 @@ export class TokenManagement {
     if (typeof this.#callbackAccessToken === "function") {
       this.#callbackRefreshToken(this.#refreshToken);
     }
+    console.log(this.#accessToken, this.#refreshToken, this.#tokenType, this.#expiryDate);
   }
   setCallbackAccessToken(callback) {
     this.#callbackAccessToken = callback;
