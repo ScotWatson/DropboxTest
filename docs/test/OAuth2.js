@@ -55,52 +55,138 @@ const selfURLFragment = selfURL.hash.substring(1);
 // Below is the "Redirect Endpoint" per Section 3 of RFC6749. Section 3.1.2 of RFC6749 provides details. It is taken to be the current location.
 const redirectEndpoint = new self.URL(selfURL.origin + selfURL.pathname);
 
+function coerseToString(args) {
+  if (typeof args === "object" && args !== null) {
+    return args.toString();
+  } else if (typeof args !== "string") {
+    return args;
+  } else {
+    throw "Failed to coerse to string";
+  }
+}
+// Each of the "retrieveToken" functions below performs redirection to obtain tokens.  This function will cause the page to refresh.
+// These functions each require:
+//   "Authorization Endpoint"
+//   "Token Endpoint"
+// The "Authorization Endpoint" per Section 3 of RFC6749. Section 3.1 of RFC6749 provides details.
+// The "Token Endpoint" per Section 3 of RFC6749. Section 3.2 of RFC6749 provides details.
+
+export async retrieveTokenPKCEAccess(args) {
+  const { authorizationEndpoint, tokenEndpoint } = args;
+  const strAuthorizationEndpoint = coerseToString(authorizationEndpoint);
+  const strTokenEndpoint = coerseToString(tokenEndpoint);
+  // Step (A) of Section 1.1 of RFC7636
+  const nonce = base64UrlEncode(strRaw32Random()).slice(0, -1);
+  const codeVerifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
+  const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(codeVerifier));
+  const codeChallenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
+  const params = new URLSearchParams([
+    [ "client_id", this.#clientId ],
+    [ "redirect_uri", redirectEndpoint ],
+    [ "response_type", "code" ],
+    [ "code_challenge", codeChallenge ],
+    [ "code_challenge_method", "S256" ],
+    [ "state", nonce ],
+  ]);
+  const authorizeURL = new URL(strAuthorizationEndpoint + "?" + params);
+  window.sessionStorage.setItem("OAuth2", {
+    grantType: "PKCE Access",
+    codeVerifier: codeVerifier,
+    tokenEndpoint: strTokenEndpoint,
+    state: nonce,
+  });
+  window.location = authorizeURL;
+  // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
+}
+export async retrieveTokenPKCERefresh(args) {
+  const { authorizationEndpoint, tokenEndpoint } = args;
+  const strAuthorizationEndpoint = coerseToString(authorizationEndpoint);
+  const strTokenEndpoint = coerseToString(tokenEndpoint);
+  // Step (A) of Section 1.1 of RFC7636
+  const nonce = base64UrlEncode(strRaw32Random()).slice(0, -1);
+  const codeVerifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
+  const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(codeVerifier));
+  const codeChallenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
+  const params = new URLSearchParams([
+    [ "client_id", this.#clientId ],
+    [ "redirect_uri", redirectEndpoint ],
+    [ "token_access_type", "offline" ],
+    [ "response_type", "code" ],
+    [ "code_challenge", code_challenge ],
+    [ "code_challenge_method", "S256" ],
+    [ "state", nonce ],
+  ]);
+  const authorizeURL = new URL(strAuthorizationEndpoint + "?" + params);
+  window.sessionStorage.setItem("OAuth2", {
+    grantType: "PKCE Refresh",
+    codeVerifier: codeVerifier,
+    tokenEndpoint: strTokenEndpoint,
+    state: nonce,
+  });
+  window.location = authorizeURL;
+  // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
+}
+export async retrieveTokenImplicitAccess(args) {
+  const { authorizationEndpoint, tokenEndpoint } = args;
+  const strAuthorizationEndpoint = coerseToString(authorizationEndpoint);
+  const strTokenEndpoint = coerseToString(tokenEndpoint);
+  // 
+  const nonce = base64UrlEncode(strRaw32Random()).slice(0, -1);
+  const params = new self.URLSearchParams([
+    [ "client_id", this.#clientId ],
+    [ "redirect_uri", redirectEndpoint ],
+    [ "response_type", "token" ],
+    [ "state", nonce ],
+  ]);
+  const authorizeURL = new self.URL(strAuthorizationEndpoint + "?" + params);
+  window.sessionStorage.setItem("OAuth2", {
+    grantType: "Implicit Grant",
+    tokenEndpoint: strTokenEndpoint,
+    state: nonce,
+  });
+  window.location = authorizeURL;
+}
+
 export class TokenManagement {
   // Below is the "Client Identifier" referred to in Section 2.2 of RFC6749. This is also referred to by some as the "App Id".
   // All methods in the library require the client identifier and therefore assume the client is registered. Unregistered clients per Section 2.4 of RFC6749 are not supported.
   // Type: string
   #clientId;
-  // Below is the "Authorization Endpoint" per Section 3 of RFC6749. Section 3.1 of RFC6749 provides details.
-  // Type: URL
-  #authorizationEndpoint;
   // Below is the "Token Endpoint" per Section 3 of RFC6749. Section 3.2 of RFC6749 provides details.
-  // Type: URL
   #tokenEndpoint;
 
+  #accessToken;
+  #refreshToken;
   #tokenType;
-  #currentAccessToken;
-  #currentRefreshToken;
+  #expiryDate;
   #callbackAccessToken;
   #callbackRefreshToken;
   constructor(args) {
-    const { clientId, authorizationEndpoint, tokenEndpoint, accessToken, refreshToken, tokenType, expiryDate } = args;
+    const { clientId, tokenEndpoint, accessToken, refreshToken, tokenType, expiryDate } = args;
     this.#clientId = clientId;
-    this.#authorizationEndpoint = authorizationEndpoint;
-    this.#tokenEndpoint = tokenEndpoint;
-    this.#currentAccessToken = "";
-    this.#currentRefreshToken = "";
+    if (typeof tokenEndpoint === "object" && tokenEndpoint !== null) {
+      this.#tokenEndpoint = tokenEndpoint.toString();
+    } else if (typeof tokenEndpoint === "string") {
+      this.#tokenEndpoint = tokenEndpoint;
+    } else {
+      throw "tokenEndpoint must be a string";
+    }
+    this.#accessToken = accessToken;
+    this.#refreshToken = refreshToken;
+    this.#tokenType = tokenType;
+    this.#expiryDate = expiryDate;
   }
   setTokens(args) {
-    const { tokenType, accessToken, refreshToken, expiresIn } = args;
-    this.#expiresIn = expiresIn;
+    const { accessToken, refreshToken, tokenType, expiryDate } = args;
+    this.#accessToken = accessToken;
+    this.#refreshToken = refreshToken;
     this.#tokenType = tokenType;
-    this.#currentAccessToken = accessToken;
-    this.#currentRefreshToken = refreshToken;
+    this.#expiryDate = expiryDate;
     if (typeof this.#callbackAccessToken === "function") {
-      this.#callbackAccessToken(currentAccessToken);
+      this.#callbackAccessToken(this.#accessToken);
     }
     if (typeof this.#callbackAccessToken === "function") {
-      this.#callbackRefreshToken(currentRefreshToken);
-    }
-  }
-  checkForExpiredTokens() {
-    for (const tokenSet of this.#tokens.values()) {
-      for (const accessToken of tokenSet.accessTokens.values()) {
-        if (Date.now() >= accessToken.expiryDate) {
-          // delete access token
-          tokenSet.accessTokens.delete(accessToken);
-        }
-      }
+      this.#callbackRefreshToken(this.#refreshToken);
     }
   }
   setCallbackAccessToken(callback) {
@@ -110,74 +196,13 @@ export class TokenManagement {
     this.#callbackRefreshToken = callback;
   }
   getAccessToken() {
-    return this.#currentAccessToken;
+    return this.#accessToken;
   }
   getRefreshToken() {
-    return this.#currentRefreshToken;
+    return this.#refreshToken;
   }
-  // Note: This function will cause the page to refresh.
-  async getPKCEAccessToken() {
-    // Step (A) of Section 1.1 of RFC7636
-    const nonceString = base64UrlEncode(strRaw32Random()).slice(0, -1);
-    const codeVerifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
-    const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(codeVerifier));
-    const codeChallenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
-    const params = new URLSearchParams([
-      [ "client_id", this.#clientId ],
-      [ "redirect_uri", redirectEndpoint ],
-      [ "response_type", "code" ],
-      [ "code_challenge", codeChallenge ],
-      [ "code_challenge_method", "S256" ],
-      [ "state", nonceString ],
-    ]);
-    const authorizeURL = new URL(this.#authorizationEndpoint + "?" + params);
-    window.sessionStorage.setItem("OAuth2", {
-      grant_type: "PKCE Access",
-      code_verifier: codeVerifier,
-    });
-    window.location = authorizeURL;
-    // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
-  }
-  // Note: This function will cause the page to refresh.
-  async getPKCERefreshToken() {
-    // Step (A) of Section 1.1 of RFC7636
-    const nonceString = base64UrlEncode(strRaw32Random()).slice(0, -1);
-    const codeVerifier = base64UrlEncode(strRaw32Random()).slice(0, -1);
-    const bytesHash = await self.crypto.subtle.digest("SHA-256", bytesFromRaw(codeVerifier));
-    const codeChallenge = base64UrlEncode(rawFromBytes(bytesHash)).slice(0, -1);
-    const params = new URLSearchParams([
-      [ "client_id", this.#clientId ],
-      [ "redirect_uri", redirectEndpoint ],
-      [ "token_access_type", "offline" ],
-      [ "response_type", "code" ],
-      [ "code_challenge", code_challenge ],
-      [ "code_challenge_method", "S256" ],
-      [ "state", nonceString ],
-    ]);
-    const authorizeURL = new URL(this.#authorizationEndpoint + "?" + params);
-    window.sessionStorage.setItem("OAuth2", {
-      grant_type: "PKCE Refresh",
-      code_verifier: code_verifier,
-    });
-    window.location = authorizeURL;
-    // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
-  }
-  // Note: This function will cause the page to refresh.
-  async getImplicitAccessToken() {
-    // 
-    const nonceString = base64UrlEncode(strRaw32Random()).slice(0, -1);
-    const params = new self.URLSearchParams([
-      [ "client_id", this.#clientId ],
-      [ "redirect_uri", redirectEndpoint ],
-      [ "response_type", "token" ],
-      [ "state", nonceString ],
-    ]);
-    const authorizeURL = new self.URL(this.#authorizationEndpoint + "?" + params);
-    window.sessionStorage.setItem("OAuth2", {
-      "grant_type": "Implicit Grant",
-      "state": nonceString,
-    });
-    window.location = authorizeURL;
+  getTokenEndpoint() {
+    return this.#tokenEndpoint;
   }
   async refreshAccessTokenPKCE() {
     const params = new self.URLSearchParams([
@@ -190,11 +215,16 @@ export class TokenManagement {
     const resp = await fetch(req);
     const jsonRespBody = await resp.text();
     const objResp = JSON.parse(jsonRespBody);
-    console.log(objResp);
     if (objResp["refresh_token"]) {
-      this.setCurrentTokenPair(objResp["refresh_token"], objResp["access_token"]);
+      this.setTokens({
+        accessToken: objResp["access_token"],
+        refreshToken: objResp["refresh_token"],
+      });
     } else {
-      this.setCurrentTokenPair("", objResp["access_token"]);
+      this.setTokens({
+        accessToken: objResp["access_token"]),
+        refreshToken: "",
+      });
     }
   }
   #revokeEndpoint;
@@ -211,19 +241,20 @@ export class TokenManagement {
     console.log(resp);
     if (resp.status === 200) {
       console.log("Token Revoked");
-      this.#setAccessToken("");
-      this.#setRefreshToken("");
+      this.#accessToken = undefined;
+      this.#refreshToken = undefined;
+      this.#tokenType = undefined;
+      this.#expiryDate = undefined;
     } else {
       console.log("Token Not Revoked");
     }
   }
   async fetch(request) {
-    this.purgeExpiredTokens();
-    if (this.#currentAccessToken === "") {
+    if ((new Date()) > this.#expiryDate) {
       await this.refreshAccessTokenPKCE();
     }
     let req = request.clone();
-    req.headers.add([ "Authorization", this.#currentTokenType + " " + this.#currentAccessToken ]);
+    req.headers.add([ "Authorization", this.#tokenType + " " + this.#accessToken ]);
     const resp = await fetch(req);
     return resp;
   }
@@ -235,9 +266,9 @@ export function isRedirect() {
   return !!objOAuth2;
 }
 
-export const receivedTokenPair = new Promise(function (resolve, reject) {
+export const receivedTokens = new Promise(function (resolve, reject) {
   if (isRedirect()) {
-    switch (objOAuth2["grantType"]) {
+    switch (objOAuth2.grantType) {
       case "PKCE Access": {
         console.log("PKCE flow redirect callback - access token");
         redirectPKCEAccess().then(resolve).catch(reject);
@@ -265,16 +296,15 @@ async function redirectPKCEAccess() {
   if (!(selfURLParams.has("code"))) {
     throw "code parameter required";
   }
+  const authorizationCode = selfURLParams.get("code");
   if (!(selfURLParams.has("state"))) {
     throw "state parameter required";
   }
   const stateReceived = selfURLParams.get("state");
-  const stateSaved = objOAuth2["state"];
-  if (stateReceived !== stateSaved) {
+  const { codeVerifier, tokenEndpoint, state } = objOAuth2;
+  if (stateReceived !== state) {
     throw "state does not match";
   }
-  const authorizationCode = selfURLParams.get("code");
-  const codeVerifier = objOAuth2["code_verifier"];
   // Step (C) of Section 1.1 of RFC7636
   const params = new self.URLSearchParams([
     ["code", authorizationCode ],
@@ -284,33 +314,31 @@ async function redirectPKCEAccess() {
     ["client_id", this.#clientId ],
   ]);
   const reqBody = new self.Blob([ params.toString() ], { type: "application/x-www-form-urlencoded" });
-  const req = createRequestPOST(objOAuth2["token_endpoint"], reqBody);
+  const req = createRequestPOST(tokenEndpoint, reqBody);
   const resp = await fetch(req);
   const jsonRespBody = await resp.text();
   // Step (D) of Section 1.1 of RFC7636
   const objResp = JSON.parse(jsonRespBody);
   return {
-    token: objResp["access_token"],
-    type: objResp["token_type"],
-    expiry_date: new Date(Date.now() + 1000 * objResp["expires_in"]),
+    tokenEndpoint: tokenEndpoint,
+    accessToken: objResp["access_token"],
+    tokenType: objResp["token_type"],
+    expiryDate: new Date(Date.now() + 1000 * objResp["expires_in"]),
   };
 }
 async function redirectPKCERefresh() {
   if (!(selfURLParams.has("code"))) {
-    reject();
-    break;
-  }
-  if (!(selfURLParams.has("state"))) {
-    reject();
-    break;
-  }
-  const stateReceived = selfURLParams.get("state");
-  const stateSaved = objOAuth2["state"];
-  if (stateReceived !== stateSaved) {
-    throw "state does not match";
+    throw "code parameter required";
   }
   const authorizationCode = selfURLParams.get("code");
-  const codeVerifier = objOAuth2["code_verifier"];
+  if (!(selfURLParams.has("state"))) {
+    throw "state parameter required";
+  }
+  const stateReceived = selfURLParams.get("state");
+  const { codeVerifier, tokenEndpoint, state } = objOAuth2;
+  if (stateReceived !== state) {
+    throw "state does not match";
+  }
   const params = new self.URLSearchParams([
     ["code", authorizationCode ],
     ["grant_type", "authorization_code" ],
@@ -319,25 +347,30 @@ async function redirectPKCERefresh() {
     ["client_id", this.#clientId ],
   ]);
   const reqBody = new self.Blob([ params.toString() ], {type: "application/x-www-form-urlencoded" });
-  const req = createRequestPOST(objOAuth2["token_endpoint"], reqBody);
+  const req = createRequestPOST(tokenEndpoint, reqBody);
   const resp = await fetch(req);
   const jsonRespBody = await resp.text();
   const objResp = JSON.parse(jsonRespBody);
   return {
-    access_token: objResp["access_token"],
-    refresh_token: objResp["refresh_token"],
+    tokenEndpoint: tokenEndpoint,
+    accessToken: objResp["access_token"],
+    refreshToken: objResp["refresh_token"],
     type: objResp["token_type"],
-    expiry_date: new Date(Date.now() + 1000 * objResp["expires_in"]),
+    expiryDate: new Date(Date.now() + 1000 * objResp["expires_in"]),
   };
 }
 async function redirectImplicitAccess() {
+  const { codeVerifier, tokenEndpoint } = objOAuth2;
   const selfURLParamsFragment = new self.URLSearchParams(selfURLFragment);
   if (!(selfURLParamsFragment.has("access_token"))) {
     throw "access_token parameter required";
     break;
   }
   return {
-    access_token: selfURLParamsFragment.get("access_token"),
+    tokenEndpoint: tokenEndpoint,
+    accessToken: selfURLParamsFragment.get("access_token"),
+    tokenType: objResp["token_type"],
+    expiryDate: new Date(Date.now() + 1000 * objResp["expires_in"]),
   };
 }
 
