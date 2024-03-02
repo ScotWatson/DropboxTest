@@ -334,22 +334,34 @@ async function redirectPKCERefresh() {
     tokenEndpoint: tokenEndpoint,
     accessToken: objResp["access_token"],
     refreshToken: objResp["refresh_token"],
-    type: objResp["token_type"],
+    tokenType: objResp["token_type"],
     expiryDate: new Date(Date.now() + 1000 * objResp["expires_in"]),
   };
 }
 async function redirectImplicitAccess() {
-  const { clientId, tokenEndpoint } = objOAuth2;
+  const { clientId, tokenEndpoint, state } = objOAuth2;
   const selfURLParamsFragment = new self.URLSearchParams(selfURLFragment);
   if (!(selfURLParamsFragment.has("access_token"))) {
     throw "access_token parameter required";
+  }
+  if (!(selfURLParamsFragment.has("token_type"))) {
+    throw "token_type parameter required";
+  }
+  if (!(selfURLParamsFragment.has("expires_in"))) {
+    throw "expires_in parameter required";
+  }
+  if (!(selfURLParamsFragment.has("state"))) {
+    throw "state parameter required";
+  }
+  if (state !== selfURLParamsFragment.get("state")) {
+    throw "state does not match";
   }
   return {
     client_id: clientId,
     tokenEndpoint: tokenEndpoint,
     accessToken: selfURLParamsFragment.get("access_token"),
-    tokenType: objResp["token_type"],
-    expiryDate: new Date(Date.now() + 1000 * objResp["expires_in"]),
+    tokenType: selfURLParamsFragment.get("token_type"),
+    expiryDate: new Date(Date.now() + 1000 * selfURLParamsFragment.get("expires_in"),
   };
 }
 
