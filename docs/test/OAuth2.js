@@ -176,7 +176,7 @@ export class TokenManagement {
     const authorizeURL = new URL(strAuthorizationEndpoint + "?" + params);
     window.sessionStorage.setItem("OAuth2", JSON.stringify({
       grantType: "PKCE Access",
-      client_id: this.#clientId,
+      clientId: this.#clientId,
       tokenEndpoint: this.#tokenEndpoint,
       state: nonce,
       codeVerifier: codeVerifier,
@@ -204,7 +204,7 @@ export class TokenManagement {
     const authorizeURL = new URL(strAuthorizationEndpoint + "?" + params);
     window.sessionStorage.setItem("OAuth2", JSON.stringify({
       grantType: "PKCE Refresh",
-      client_id: this.#clientId,
+      clientId: this.#clientId,
       tokenEndpoint: this.#tokenEndpoint,
       state: nonce,
       codeVerifier: codeVerifier,
@@ -226,7 +226,7 @@ export class TokenManagement {
     const authorizeURL = new self.URL(strAuthorizationEndpoint + "?" + params);
     window.sessionStorage.setItem("OAuth2", JSON.stringify({
       grantType: "Implicit Access",
-      client_id: this.#clientId,
+      clientId: this.#clientId,
       tokenEndpoint: this.#tokenEndpoint,
       state: nonce,
     }));
