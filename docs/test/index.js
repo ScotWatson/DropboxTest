@@ -68,6 +68,22 @@ function start([ evtWindow, OAuth2 ]) {
   try {
     const fragmentParams = new URLSearchParams(selfURLFragment);
     let clientId = fragmentParams.get("appId");
+    const dropboxAuthorizationEndpoint = new self.URL("https://www.dropbox.com/oauth2/authorize");
+    const dropboxTokenEndpoint = new self.URL("https://api.dropboxapi.com/oauth2/token");
+    let dropboxTokenManagement;
+    function createTokenManager(args) {
+      dropboxTokenManagement = new OAuth2.TokenManagement();
+    }
+    const btnStart = document.createElement("button");
+    btnStart.append("Start");
+    btnStart.addEventListener("click", function () {
+      createTokenManager({
+        clientId: getClientId(),
+        tokenEndpoint: dropboxTokenEndpoint,
+      });
+      btnStart.remove();
+    });
+    document.body.appendChild(btnStart);
     const pClientId = document.createElement("p");
     pClientId.append(clientId);
     document.body.appendChild(pClientId);
@@ -79,12 +95,6 @@ function start([ evtWindow, OAuth2 ]) {
       }
       return clientId;
     }
-    const dropboxAuthorizationEndpoint = new self.URL("https://www.dropbox.com/oauth2/authorize");
-    const dropboxTokenEndpoint = new self.URL("https://api.dropboxapi.com/oauth2/token");
-    const dropboxTokenManagement = new OAuth2.TokenManagement({
-      clientId: getClientId(),
-      tokenEndpoint: dropboxTokenEndpoint,
-    });
     async function revokeDropboxTokens() {
       const revokeEndpoint = new self.URL("https://api.dropboxapi.com/2/auth/token/revoke");
       const req = createRequestPOST(revokeEndpoint, null, []);
@@ -101,7 +111,7 @@ function start([ evtWindow, OAuth2 ]) {
       if (tokens.tokenEndpoint === dropboxTokenEndpoint.toString()) {
         pClientId.innerHTML = "";
         pClientId.append(clientId);
-        dropboxTokenManagement.setTokens(tokens);
+        createTokenManager(tokens);
       }
     }).catch(function (error) {
       console.error(error);
