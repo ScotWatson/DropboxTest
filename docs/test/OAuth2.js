@@ -125,7 +125,7 @@ export class TokenManagement {
   async refreshAccessTokenPKCE() {
     const params = new self.URLSearchParams([
       ["grant_type", "refresh_token" ],
-      ["refresh_token", this.#currentRefreshToken ],
+      ["refresh_token", this.#refreshToken ],
       ["client_id", this.#clientId ],
     ]);
     const reqBody = new self.Blob([ params.toString() ], {type: "application/x-www-form-urlencoded" });
