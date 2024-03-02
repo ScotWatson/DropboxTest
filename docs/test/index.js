@@ -238,7 +238,6 @@ function start([ evtWindow, OAuth2 ]) {
         clientId: getClientId(),
         tokenEndpoint: dropboxTokenEndpoint,
       });
-      btnStart.remove();
     });
     document.body.appendChild(btnStart);
     function getClientId() {
