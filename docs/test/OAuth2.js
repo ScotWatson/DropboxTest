@@ -235,7 +235,7 @@ export class TokenManagement {
 }
 
 const objOAuth2 = window.sessionStorage.getItem("OAuth2");
-window.sessionStorage.removeItem("OAuth2");
+//window.sessionStorage.removeItem("OAuth2");
 export function isRedirect() {
   return !!objOAuth2;
 }
