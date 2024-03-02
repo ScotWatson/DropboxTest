@@ -92,7 +92,6 @@ export class TokenManagement {
     this.setTokens(args);
   }
   setTokens(args) {
-    console.log("Setting tokens...");
     const { accessToken, refreshToken, tokenType, expiryDate } = args;
     this.#accessToken = accessToken;
     this.#refreshToken = refreshToken;
@@ -104,7 +103,6 @@ export class TokenManagement {
     if (typeof this.#callbackAccessToken === "function") {
       this.#callbackRefreshToken(this.#refreshToken);
     }
-    console.log(this.#accessToken, this.#refreshToken, this.#tokenType, this.#expiryDate);
   }
   setCallbackAccessToken(callback) {
     this.#callbackAccessToken = callback;
@@ -132,7 +130,6 @@ export class TokenManagement {
     const resp = await fetch(req);
     const jsonRespBody = await resp.text();
     const objResp = JSON.parse(jsonRespBody);
-    console.log(objResp);
     if (objResp["refresh_token"]) {
       this.setTokens({
         accessToken: objResp["access_token"],
@@ -154,7 +151,7 @@ export class TokenManagement {
       await this.refreshAccessTokenPKCE();
     }
     let req = request.clone();
-    req.headers.add([ "Authorization", this.#tokenType + " " + this.#accessToken ]);
+    req.headers.append([ "Authorization", this.#tokenType + " " + this.#accessToken ]);
     const resp = await fetch(req);
     return resp;
   }
@@ -239,9 +236,7 @@ export class TokenManagement {
 }
 
 const jsonOAuth2 = window.sessionStorage.getItem("OAuth2");
-console.log(jsonOAuth2);
 const objOAuth2 = (jsonOAuth2 === null) ? null : JSON.parse(jsonOAuth2);
-console.log(objOAuth2);
 window.sessionStorage.removeItem("OAuth2");
 export function isRedirect() {
   return !(objOAuth2 === null);
@@ -251,17 +246,14 @@ export const receivedTokens = new Promise(function (resolve, reject) {
   if (isRedirect()) {
     switch (objOAuth2.grantType) {
       case "PKCE Access": {
-        console.log("PKCE flow redirect callback - access token");
         redirectPKCEAccess().then(resolve).catch(reject);
       }
         break;
       case "PKCE Refresh": {
-        console.log("PKCE flow redirect callback - refresh token");
         redirectPKCERefresh().then(resolve).catch(reject);
       }
         break;
       case "Implicit Access": {
-        console.log("Implicit flow redirect callback - access token");
         redirectImplicitAccess().then(resolve).catch(reject);
       }
         break;
