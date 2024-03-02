@@ -78,7 +78,7 @@ function start([ evtWindow, OAuth2 ]) {
     function createTokenManager(args) {
       const div = document.createElement("div");
       const pClientId = document.createElement("p");
-      pClientId.append(clientId);
+      pClientId.append(args.clientId);
       div.appendChild(pClientId);
       const dropboxTokenManagement = new OAuth2.TokenManagement(args);
       async function revokeDropboxTokens() {
@@ -186,7 +186,7 @@ function start([ evtWindow, OAuth2 ]) {
       div.appendChild(btnListFolder);
       const inpPath = document.createElement("input");
       inpPath.type = "text";
-      document.body.appendChild(inpPath);
+      div.appendChild(inpPath);
       const btnDownload = document.createElement("button");
       btnDownload.innerHTML = "Download";
       btnDownload.addEventListener("click", function (evt) {
