@@ -167,7 +167,7 @@ function start([ evtWindow, OAuth2 ]) {
     });
     pRefreshToken.appendChild(btnCreateAccessToken);
     const spanRefreshToken = document.createElement("span");
-    spanRefreshToken.append(OAuth2.getRefreshToken());
+    spanRefreshToken.append(dropboxTokenManagement.getRefreshToken());
     dropboxTokenManagement.setCallbackRefreshToken(function (strToken) {
       spanRefreshToken.innerHTML = "";
       spanRefreshToken.append(strToken);
