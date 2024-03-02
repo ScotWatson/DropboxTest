@@ -86,6 +86,7 @@ function start([ evtWindow, OAuth2 ]) {
       }
     }
     OAuth2.receivedTokens.then(function (tokens) {
+      console.log(tokens);
       if ((tokens.clientId === dropboxClientId) && (tokens.tokenEndpoint === dropboxTokenEndpoint)) {
         dropboxTokenManagement.setTokens(tokens);
       }
