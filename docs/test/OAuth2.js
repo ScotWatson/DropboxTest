@@ -196,7 +196,7 @@ export class TokenManagement {
       [ "redirect_uri", redirectEndpoint ],
       [ "token_access_type", "offline" ],
       [ "response_type", "code" ],
-      [ "code_challenge", code_challenge ],
+      [ "code_challenge", codeChallenge ],
       [ "code_challenge_method", "S256" ],
       [ "state", nonce ],
     ]);
