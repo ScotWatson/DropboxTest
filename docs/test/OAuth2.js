@@ -174,13 +174,13 @@ export class TokenManagement {
       [ "state", nonce ],
     ]);
     const authorizeURL = new URL(strAuthorizationEndpoint + "?" + params);
-    window.sessionStorage.setItem("OAuth2", {
+    window.sessionStorage.setItem("OAuth2", JSON.stringify({
       grantType: "PKCE Access",
       client_id: this.#clientId,
       tokenEndpoint: this.#tokenEndpoint,
       state: nonce,
       codeVerifier: codeVerifier,
-    });
+    }));
     window.location = authorizeURL;
     // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
   }
@@ -202,13 +202,13 @@ export class TokenManagement {
       [ "state", nonce ],
     ]);
     const authorizeURL = new URL(strAuthorizationEndpoint + "?" + params);
-    window.sessionStorage.setItem("OAuth2", {
+    window.sessionStorage.setItem("OAuth2", JSON.stringify({
       grantType: "PKCE Refresh",
       client_id: this.#clientId,
       tokenEndpoint: this.#tokenEndpoint,
       state: nonce,
       codeVerifier: codeVerifier,
-    });
+    }));
     window.location = authorizeURL;
     // Step (B) of Section 1.1 of RFC7636 occurs on the server. It will send a redirect.
   }
@@ -224,24 +224,25 @@ export class TokenManagement {
       [ "state", nonce ],
     ]);
     const authorizeURL = new self.URL(strAuthorizationEndpoint + "?" + params);
-    window.sessionStorage.setItem("OAuth2", {
+    window.sessionStorage.setItem("OAuth2", JSON.stringify({
       grantType: "Implicit Grant",
       client_id: this.#clientId,
       tokenEndpoint: this.#tokenEndpoint,
       state: nonce,
-    });
+    }));
     window.location = authorizeURL;
   }
 }
 
-const objOAuth2 = window.sessionStorage.getItem("OAuth2");
+const jsonOAuth2 = window.sessionStorage.getItem("OAuth2");
+const objOAuth2 = (jsonOAuth2 === null) ? null : JSON.parse(jsonOAuth2);
 //window.sessionStorage.removeItem("OAuth2");
 export function isRedirect() {
-  return !!objOAuth2;
+  return !(objOAuth2 === null);
 }
 
 export const receivedTokens = new Promise(function (resolve, reject) {
-  console.log(JSON.stringify(objOAuth2));
+  console.log(objOAuth2);
   if (isRedirect()) {
     switch (objOAuth2.grantType) {
       case "PKCE Access": {
