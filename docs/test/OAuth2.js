@@ -335,7 +335,6 @@ async function redirectImplicitAccess() {
   const selfURLParamsFragment = new self.URLSearchParams(selfURLFragment);
   if (!(selfURLParamsFragment.has("access_token"))) {
     throw "access_token parameter required";
-    break;
   }
   return {
     tokenEndpoint: tokenEndpoint,
