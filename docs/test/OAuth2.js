@@ -225,7 +225,7 @@ export class TokenManagement {
     ]);
     const authorizeURL = new self.URL(strAuthorizationEndpoint + "?" + params);
     window.sessionStorage.setItem("OAuth2", JSON.stringify({
-      grantType: "Implicit Grant",
+      grantType: "Implicit Access",
       client_id: this.#clientId,
       tokenEndpoint: this.#tokenEndpoint,
       state: nonce,
@@ -238,7 +238,7 @@ const jsonOAuth2 = window.sessionStorage.getItem("OAuth2");
 console.log(jsonOAuth2);
 const objOAuth2 = (jsonOAuth2 === null) ? null : JSON.parse(jsonOAuth2);
 console.log(objOAuth2);
-//window.sessionStorage.removeItem("OAuth2");
+window.sessionStorage.removeItem("OAuth2");
 export function isRedirect() {
   return !(objOAuth2 === null);
 }
