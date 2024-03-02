@@ -260,7 +260,7 @@ export const receivedTokens = new Promise(function (resolve, reject) {
         break;
       // Implicit flow redirect callback - refresh token - NOT POSSIBLE
       default: {
-        console.error("Invalid Authorization mode.");
+        throw "Invalid grant type: " + objOAuth2.grantType;
       }
     };
   }
