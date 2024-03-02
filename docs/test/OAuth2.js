@@ -92,6 +92,7 @@ export class TokenManagement {
     this.setTokens(args);
   }
   setTokens(args) {
+    console.log("Setting tokens...");
     const { accessToken, refreshToken, tokenType, expiryDate } = args;
     this.#accessToken = accessToken;
     this.#refreshToken = refreshToken;
