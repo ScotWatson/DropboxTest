@@ -90,6 +90,8 @@ function start([ evtWindow, OAuth2 ]) {
       if ((tokens.clientId === dropboxClientId) && (tokens.tokenEndpoint === dropboxTokenEndpoint)) {
         dropboxTokenManagement.setTokens(tokens);
       }
+    }).catch(function (error) {
+      console.error(error);
     });
     const btnRevokeTokens = document.createElement("button");
     btnRevokeTokens.innerHTML = "Revoke Tokens";
