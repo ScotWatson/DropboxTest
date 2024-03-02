@@ -297,7 +297,7 @@ async function redirectPKCEAccess() {
   // Step (D) of Section 1.1 of RFC7636
   const objResp = JSON.parse(jsonRespBody);
   return {
-    client_id: clientId,
+    clientId: clientId,
     tokenEndpoint: tokenEndpoint,
     accessToken: objResp["access_token"],
     tokenType: objResp["token_type"],
@@ -330,7 +330,7 @@ async function redirectPKCERefresh() {
   const jsonRespBody = await resp.text();
   const objResp = JSON.parse(jsonRespBody);
   return {
-    client_id: clientId,
+    clientId: clientId,
     tokenEndpoint: tokenEndpoint,
     accessToken: objResp["access_token"],
     refreshToken: objResp["refresh_token"],
@@ -357,7 +357,7 @@ async function redirectImplicitAccess() {
     throw "state does not match";
   }
   return {
-    client_id: clientId,
+    clientId: clientId,
     tokenEndpoint: tokenEndpoint,
     accessToken: selfURLParamsFragment.get("access_token"),
     tokenType: selfURLParamsFragment.get("token_type"),
