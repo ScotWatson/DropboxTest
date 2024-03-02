@@ -89,10 +89,7 @@ export class TokenManagement {
     } else {
       throw "tokenEndpoint must be a string";
     }
-    this.#accessToken = accessToken;
-    this.#refreshToken = refreshToken;
-    this.#tokenType = tokenType;
-    this.#expiryDate = expiryDate;
+    this.setTokens(args);
   }
   setTokens(args) {
     const { accessToken, refreshToken, tokenType, expiryDate } = args;
