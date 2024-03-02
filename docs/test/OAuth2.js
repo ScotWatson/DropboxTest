@@ -227,28 +227,6 @@ export class TokenManagement {
       });
     }
   }
-  #revokeEndpoint;
-  setRevokeEndpoint(newRevokeEndpoint) {
-    this.#revokeEndpoint = newRevokeEndpoint;
-  }
-  getRevokeEndpoint() {
-    return this.#revokeEndpoint;
-  }
-  async revokeToken(strToken) {
-    const headers = [ [ "Authorization", "Bearer " + strToken ] ];
-    const req = createRequestPOST(revokeEndpoint, null, headers);
-    const resp = await fetch(req);
-    console.log(resp);
-    if (resp.status === 200) {
-      console.log("Token Revoked");
-      this.#accessToken = undefined;
-      this.#refreshToken = undefined;
-      this.#tokenType = undefined;
-      this.#expiryDate = undefined;
-    } else {
-      console.log("Token Not Revoked");
-    }
-  }
   async fetch(request) {
     if ((new Date()) > this.#expiryDate) {
       await this.refreshAccessTokenPKCE();
